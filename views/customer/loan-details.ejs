@@ -1,0 +1,264 @@
+<% layout('layouts/main') %>
+<link rel="stylesheet" href="/css/loan-details.css">
+
+<div class="ld-page">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="ld-header">
+    <div>
+      <h1 class="ld-loan-number"><%= loan.loan_number %></h1>
+      <p class="ld-loan-sub"><%= loan.loan_name %> &bull; Loan Details</p>
+    </div>
+    <a href="/customer/loans" class="ld-back-btn" aria-label="Back to loans list">
+      <i class="fa fa-arrow-left"></i> Back to Loans
+    </a>
+  </div>
+
+  <!-- ═══ SUMMARY CARDS ═══ -->
+  <div class="ld-summary-grid">
+
+    <!-- Row 1 -->
+    <div class="ld-kpi-card" style="--card-accent: #0D9488;">
+      <div class="ld-kpi-icon" style="background: rgba(13,148,136,0.1); color:#0D9488;">
+        <i class="fa-solid fa-briefcase"></i>
+      </div>
+      <div class="ld-kpi-body">
+        <span class="ld-kpi-label">Loan Scheme</span>
+        <span class="ld-kpi-value" style="font-size: 1.1rem;"><%= loan.scheme_name %></span>
+      </div>
+    </div>
+
+    <div class="ld-kpi-card" style="--card-accent: #1D4ED8;">
+      <div class="ld-kpi-icon" style="background: rgba(29,78,216,0.1); color:#1D4ED8;">
+        <i class="fa-solid fa-rotate"></i>
+      </div>
+      <div class="ld-kpi-body">
+        <span class="ld-kpi-label">Payment Frequency</span>
+        <span class="ld-kpi-value" style="font-size: 1.1rem;"><%= loan.repayment_frequency || 'MONTHLY' %></span>
+      </div>
+    </div>
+
+    <div class="ld-kpi-card" style="--card-accent: #E07B2A;">
+      <div class="ld-kpi-icon" style="background: rgba(224,123,42,0.1); color:#E07B2A;">
+        <i class="fa-solid fa-percent"></i>
+      </div>
+      <div class="ld-kpi-body">
+        <span class="ld-kpi-label">Interest Rate</span>
+        <span class="ld-kpi-value" style="font-size: 1.1rem;"><% if (loan.interest_calculation_method === 'FLAT_AMOUNT') { %><%= formatINR(loan.flat_interest_amount || loan.total_interest || 0) %> (Flat)<% } else { %><%= loan.annual_interest_rate %>% <%= loan.interest_type || '' %><% } %></span>
+      </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="ld-kpi-card" style="--card-accent: #4F46E5;">
+      <div class="ld-kpi-icon" style="background: rgba(79,70,229,0.1); color:#4F46E5;">
+        <i class="fa-solid fa-money-bill-wave"></i>
+      </div>
+      <div class="ld-kpi-body">
+        <span class="ld-kpi-label">Loan Amount</span>
+        <span class="ld-kpi-value"><%= formatINR(loan.principal_amount) %></span>
+      </div>
+    </div>
+
+    <div class="ld-kpi-card" style="--card-accent: #BE185D;">
+      <div class="ld-kpi-icon" style="background: rgba(190,24,93,0.1); color:#BE185D;">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+      <div class="ld-kpi-body">
+        <span class="ld-kpi-label">Outstanding</span>
+        <span class="ld-kpi-value"><%= formatINR(loan.outstanding_balance) %></span>
+      </div>
+    </div>
+
+    <div class="ld-kpi-card" style="--card-accent: #DC2626;">
+      <div class="ld-kpi-icon" style="background: rgba(220,38,38,0.1); color:#DC2626;">
+        <i class="fa-regular fa-calendar-check"></i>
+      </div>
+      <div class="ld-kpi-body">
+        <span class="ld-kpi-label"><%= loan.repayment_frequency === 'DAILY' ? "Today's Payment" : (loan.repayment_frequency === 'WEEKLY' ? "Weekly Payment" : (loan.repayment_frequency === 'MONTHLY' ? "Monthly Payment" : "Next Payment")) %></span>
+        <span class="ld-kpi-value"><%= formatINR(loan.next_payment_amount) %></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ MAIN CONTENT ROW (desktop 2-col, mobile stacked) ═══ -->
+  <div class="ld-content-row">
+
+    <!-- ── EMI Schedule ── -->
+    <div class="ld-section">
+      <h2 class="ld-section-title">
+        <i class="fa-regular fa-calendar-days" style="color:#E07B2A;"></i>
+        EMI Schedule
+      </h2>
+
+      <!-- DESKTOP TABLE (hidden on mobile via CSS) -->
+      <div class="ld-emi-table-wrap">
+        <table class="table" style="width:100%;">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Due Date</th>
+              <th>Amount</th>
+              <th>Paid</th>
+              <th>Penalty</th>
+              <th>Remaining</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (installments && installments.length > 0) { %>
+              <% installments.forEach(emi => { %>
+                <tr>
+                  <td><%= emi.installment_number %></td>
+                  <td style="<%= emi.installment_status === 'OVERDUE' ? 'color:#DC2626;font-weight:500;' : '' %>">
+                    <%= formatDate(emi.due_date) %>
+                  </td>
+                  <td><%= formatINR(emi.total_amount) %></td>
+                  <td><%= formatINR(emi.paid_amount) %></td>
+                  <td style="color:#F59E0B;"><%= formatINR(emi.dynamic_penalty) %></td>
+                  <td style="font-weight:600;"><%= formatINR(parseFloat(emi.remaining_amount) + parseFloat(emi.dynamic_penalty)) %></td>
+                  <td>
+                    <% if (emi.installment_status === 'PAID' || emi.installment_status === 'COMPLETED') { %>
+                      <span class="ld-badge ld-badge-paid"><%= emi.installment_status %></span>
+                    <% } else if (emi.installment_status === 'OVERDUE') { %>
+                      <span class="ld-badge ld-badge-overdue">OVERDUE</span>
+                    <% } else { %>
+                      <span class="ld-badge ld-badge-pending">DUE</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (emi.installment_status !== 'PAID') { %>
+                      <a href="/customer/payments" 
+                         class="btn btn-primary btn-sm"
+                         style="padding:4px 14px;font-size:0.8rem;">
+                        Pay Now
+                      </a>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="8" class="ld-empty">No EMI schedule available.</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MOBILE CARDS (hidden on desktop via CSS) -->
+      <div class="ld-emi-cards">
+        <% if (installments && installments.length > 0) { %>
+          <% installments.forEach(emi => { %>
+            <div class="ld-emi-card">
+              <div class="ld-emi-card-header">
+                <span class="ld-emi-no">Installment #<%= emi.installment_number %></span>
+                <% if (emi.installment_status === 'PAID') { %>
+                  <span class="ld-badge ld-badge-paid">PAID</span>
+                <% } else if (emi.installment_status === 'OVERDUE') { %>
+                  <span class="ld-badge ld-badge-overdue">OVERDUE</span>
+                <% } else { %>
+                  <span class="ld-badge ld-badge-pending">PENDING</span>
+                <% } %>
+              </div>
+
+              <div class="ld-emi-rows">
+                <div class="ld-emi-row-item">
+                  <span class="ld-emi-row-label">Due Date</span>
+                  <span class="ld-emi-row-value" style="<%= emi.installment_status === 'OVERDUE' ? 'color:#DC2626;' : '' %>">
+                    <%= formatDate(emi.due_date) %>
+                  </span>
+                </div>
+                <div class="ld-emi-row-item">
+                  <span class="ld-emi-row-label">Amount</span>
+                  <span class="ld-emi-row-value"><%= formatINR(emi.total_amount) %></span>
+                </div>
+                <div class="ld-emi-row-item">
+                  <span class="ld-emi-row-label">Paid</span>
+                  <span class="ld-emi-row-value"><%= formatINR(emi.paid_amount) %></span>
+                </div>
+                <div class="ld-emi-row-item">
+                  <span class="ld-emi-row-label">Penalty</span>
+                  <span class="ld-emi-row-value" style="color:#F59E0B;"><%= formatINR(emi.dynamic_penalty) %></span>
+                </div>
+                <div class="ld-emi-row-item">
+                  <span class="ld-emi-row-label">Remaining</span>
+                  <span class="ld-emi-row-value" style="font-weight:600;"><%= formatINR(parseFloat(emi.remaining_amount) + parseFloat(emi.dynamic_penalty)) %></span>
+                </div>
+              </div>
+
+              <% if (emi.installment_status !== 'PAID') { %>
+                <a href="/customer/payments" class="ld-pay-btn">
+                  Pay Now
+                </a>
+              <% } %>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p class="ld-empty">No EMI schedule available.</p>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ── Right Column: Payments + Ledger ── -->
+    <div>
+
+      <!-- Recent Payments -->
+      <div class="ld-section">
+        <h2 class="ld-section-title">
+          <i class="fa-solid fa-receipt" style="color:#16A34A;"></i>
+          Recent Payments
+        </h2>
+
+        <% if (payments && payments.length > 0) { %>
+          <div class="ld-payments-list">
+            <% payments.forEach(p => { %>
+              <div class="ld-payment-card">
+                <div>
+                  <div class="ld-payment-amount"><%= formatINR(p.amount) %></div>
+                </div>
+                <div class="ld-payment-meta">
+                  <span class="ld-payment-date"><%= formatDate(p.payment_date) %></span>
+                  <span class="ld-payment-ref">Ref #<%= p.payment_reference || p.id %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="ld-empty">No repayments have been made yet.</p>
+        <% } %>
+      </div>
+
+      <!-- Transaction Ledger -->
+      <div class="ld-section">
+        <h2 class="ld-section-title">
+          <i class="fa-solid fa-list-ul" style="color:#1D4ED8;"></i>
+          Transaction Ledger
+        </h2>
+
+        <% if (transactions && transactions.length > 0) { %>
+          <div class="ld-ledger-list">
+            <% transactions.forEach(tx => { %>
+              <div class="ld-ledger-card">
+                <div class="ld-ledger-left">
+                  <span class="ld-ledger-type"><%= tx.transaction_type %></span>
+                  <span class="ld-ledger-date"><%= formatDate(tx.transaction_date) %></span>
+                </div>
+                <div class="ld-ledger-right">
+                  <span class="ld-ledger-amount <%= tx.credit_amount > 0 ? 'credit' : 'debit' %>">
+                    <%= tx.credit_amount > 0 ? '+' : '-' %><%= formatINR(tx.credit_amount || tx.debit_amount) %>
+                  </span>
+                  <span class="ld-ledger-balance">Bal: <%= formatINR(tx.running_balance) %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="ld-empty">No transaction history available.</p>
+        <% } %>
+      </div>
+
+    </div><!-- end right column -->
+  </div><!-- end content row -->
+</div><!-- end ld-page -->

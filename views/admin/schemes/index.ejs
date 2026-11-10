@@ -1,0 +1,175 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <h1 class="admin-page-title">Loan Schemes</h1>
+    <p class="admin-page-desc">Manage customizable loan products and repayment frequencies.</p>
+  </div>
+  <div>
+    <% if (hasPermission('schemes.create')) { %>
+    <a href="/admin/schemes/create" class="admin-btn admin-btn-primary">
+      <i class="fa fa-plus-circle"></i> Create Scheme
+    </a>
+    <% } %>
+  </div>
+</div>
+
+
+
+<!-- KPI Cards -->
+<div class="admin-kpi-grid">
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-blue">
+      <i class="fa fa-list"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Total Schemes</span>
+      <span class="admin-kpi-value"><%= schemes.length %></span>
+    </div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-green">
+      <i class="fa fa-check-circle"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Active Schemes</span>
+      <span class="admin-kpi-value"><%= schemes.filter(s => s.status === 'ACTIVE').length %></span>
+    </div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-teal">
+      <i class="fa fa-users"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Customers Enrolled</span>
+      <span class="admin-kpi-value"><%= schemes.reduce((sum, s) => sum + (s.enrolled_count || 0), 0) %></span>
+    </div>
+  </div>
+</div>
+
+<div class="admin-widget mb-4">
+  <div class="admin-widget-header">
+    <div class="admin-widget-title">
+      <i class="fa fa-filter text-primary"></i> Filter Schemes
+    </div>
+  </div>
+  <div class="p-4 border-bottom">
+    <form method="GET" action="/admin/schemes" class="row g-3">
+      <div class="col-md-4">
+        <input type="text" name="search" class="form-control" placeholder="Search scheme name or code..." value="<%= filters.search || '' %>">
+      </div>
+      <div class="col-md-3">
+        <select name="status" class="form-select">
+          <option value="">All Statuses</option>
+          <option value="ACTIVE" <%= filters.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+          <option value="INACTIVE" <%= filters.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+          <option value="DRAFT" <%= filters.status === 'DRAFT' ? 'selected' : '' %>>Draft</option>
+          <option value="ARCHIVED" <%= filters.status === 'ARCHIVED' ? 'selected' : '' %>>Archived</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="frequency" class="form-select">
+          <option value="">All Frequencies</option>
+          <option value="DAILY" <%= filters.repayment_frequency === 'DAILY' ? 'selected' : '' %>>Daily</option>
+          <option value="WEEKLY" <%= filters.repayment_frequency === 'WEEKLY' ? 'selected' : '' %>>Weekly</option>
+          <option value="MONTHLY" <%= filters.repayment_frequency === 'MONTHLY' ? 'selected' : '' %>>Monthly</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="admin-btn admin-btn-secondary w-100 h-100">Filter</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="table-responsive d-none d-lg-block">
+    <table class="admin-table w-100">
+      <thead>
+        <tr>
+          <th>Scheme</th>
+          <th>Interest</th>
+          <th>Duration</th>
+          <th>Frequency</th>
+          <th>Customers</th>
+          <th>Status</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (schemes.length === 0) { %>
+          <tr>
+            <td colspan="7" class="text-center text-muted py-5">No schemes found.</td>
+          </tr>
+        <% } %>
+        <% schemes.forEach(scheme => { %>
+        <tr>
+          <td>
+            <div class="fw-600 text-heading"><%= scheme.scheme_name %></div>
+            <div class="text-xs text-muted"><%= scheme.scheme_code %> (v<%= scheme.version %>)</div>
+          </td>
+          <td><span class="fw-600"><%= scheme.base_interest_rate %>%</span> <span class="text-xs text-muted"><%= scheme.interest_type %></span></td>
+          <td><%= scheme.duration_value %> <%= scheme.duration_unit %></td>
+          <td>
+            <% if(scheme.repayment_frequency === 'DAILY') { %> <span class="admin-badge badge-info">DAILY</span> <% } %>
+            <% if(scheme.repayment_frequency === 'WEEKLY') { %> <span class="admin-badge badge-warning">WEEKLY</span> <% } %>
+            <% if(scheme.repayment_frequency === 'MONTHLY') { %> <span class="admin-badge badge-primary">MONTHLY</span> <% } %>
+          </td>
+          <td><%= scheme.enrolled_count || 0 %></td>
+          <td>
+            <% if(scheme.status === 'ACTIVE') { %> <span class="admin-badge badge-success">ACTIVE</span> <% } %>
+            <% if(scheme.status === 'DRAFT') { %> <span class="admin-badge badge-secondary">DRAFT</span> <% } %>
+            <% if(scheme.status === 'INACTIVE') { %> <span class="admin-badge badge-warning">INACTIVE</span> <% } %>
+            <% if(scheme.status === 'ARCHIVED') { %> <span class="admin-badge badge-danger">ARCHIVED</span> <% } %>
+          </td>
+          <td class="text-right">
+            <% if (hasPermission('schemes.view')) { %>
+            <a href="/admin/schemes/<%= scheme.id %>" class="admin-btn admin-btn-secondary py-1 px-3 text-xs">View</a>
+            <% } %>
+            <% if (hasPermission('schemes.edit') && scheme.status === 'DRAFT') { %>
+            <a href="/admin/schemes/<%= scheme.id %>/edit" class="admin-btn admin-btn-secondary py-1 px-3 text-xs">Edit</a>
+            <% } else if (hasPermission('schemes.clone')) { %>
+            <!-- If active/inactive, editing creates a clone usually, handled in detail view, or explicit clone here -->
+            <form action="/admin/schemes/<%= scheme.id %>/clone" method="POST" class="d-inline" onsubmit="return confirm('Clone this scheme?');">
+              <input type="hidden" name="is_new_version" value="true">
+              <button type="submit" class="admin-btn admin-btn-secondary py-1 px-3 text-xs">Clone</button>
+            </form>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mobile Card Layout -->
+  <div class="d-block d-lg-none p-3">
+    <% if (schemes.length === 0) { %>
+      <div class="text-center text-muted py-5">No schemes found.</div>
+    <% } %>
+    <% schemes.forEach(scheme => { %>
+    <div class="card mb-3 shadow-sm border-0 rounded-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h6 class="mb-0 fw-700 text-heading"><%= scheme.scheme_name %></h6>
+            <small class="text-muted"><%= scheme.scheme_code %> (v<%= scheme.version %>)</small>
+          </div>
+          <div>
+            <% if(scheme.status === 'ACTIVE') { %> <span class="admin-badge badge-success">ACTIVE</span> <% } else { %> <span class="admin-badge badge-secondary"><%= scheme.status %></span> <% } %>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mb-3 text-sm text-muted">
+          <div><i class="fa fa-percent"></i> <%= scheme.base_interest_rate %>%</div>
+          <div><i class="fa fa-clock"></i> <%= scheme.duration_value %> <%= scheme.duration_unit %></div>
+          <div><i class="fa fa-calendar-alt"></i> <%= scheme.repayment_frequency %></div>
+        </div>
+        <div class="mb-3 text-sm">
+          <strong><%= scheme.enrolled_count || 0 %></strong> Customers Enrolled
+        </div>
+        <div class="d-flex gap-2">
+          <a href="/admin/schemes/<%= scheme.id %>" class="admin-btn admin-btn-secondary w-100 text-center">View</a>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>

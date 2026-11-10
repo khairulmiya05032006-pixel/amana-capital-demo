@@ -1,0 +1,122 @@
+<% layout('layouts/main') %>
+
+<div class="dashboard-app-container">
+  
+  <div class="app-header-back">
+    <a href="/customer/dashboard" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+    <h1 class="page-title-center">My Loans</h1>
+  </div>
+
+  <% if (loans && loans.length > 0) { %>
+    <% const loan = typeof activeLoan !== 'undefined' && activeLoan ? activeLoan : loans[0]; %>
+    
+    <% if (loans.length > 1) { %>
+      <div class="mb-3" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
+        <% loans.forEach(l => { %>
+          <a href="/customer/loans?selectedLoanId=<%= l.id %>" class="btn btn-sm <%= l.id === loan.id ? 'btn-primary' : 'btn-secondary' %>" style="border-radius: 999px; font-size: 0.8rem; white-space: nowrap;">
+            Loan <%= l.loan_number %> (<%= l.loan_status %>)
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div class="loan-details-card">
+      <div class="loan-id-row" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between;">
+        <div style="flex: 1 1 100%; min-width: 200px;">
+          <div class="loan-id-text">Loan ID: <%= loan.loan_number %></div>
+          <div class="loan-greeting">Hi, <%= user.first_name || user.email || 'Customer' %></div>
+        </div>
+        <div class="d-flex align-items-center gap-2" style="flex-wrap: wrap;">
+          <% if (loan.disbursed) { %>
+            <div class="card-badge" style="position: relative; top: 0; right: 0; color: #10b981; border-color: #10b981; background: rgba(16, 185, 129, 0.1);">Funds Disbursed</div>
+          <% } %>
+          <div class="card-badge" style="position: relative; top: 0; right: 0; color: #fee2e2; border-color: #fee2e2;"> <%= loan.loan_status || 'ACTIVE' %> | <%= loan.application_status || 'N/A' %></div>
+        </div>
+      </div>
+
+      <div class="loan-stats-grid">
+        <div class="loan-stat-box">
+          <div class="stat-box-label">Loan Amount</div>
+          <div class="stat-box-value">₹<%= Number(loan.principal_amount).toLocaleString('en-IN') %></div>
+        </div>
+        <div class="loan-stat-box">
+          <div class="stat-box-label">Outstanding Balance</div>
+          <div class="stat-box-value">₹<%= Number(loan.outstanding_balance).toLocaleString('en-IN') %></div>
+        </div>
+        <div class="loan-stat-box">
+          <div class="stat-box-label">Next EMI Date</div>
+          <% 
+            const upcomingEmi = emiSchedule ? emiSchedule.find(e => e.status === 'PENDING' || e.status === 'OVERDUE') : null;
+          %>
+          <div class="stat-box-value"><%= upcomingEmi ? new Date(upcomingEmi.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A' %></div>
+        </div>
+        <div class="loan-stat-box">
+          <div class="stat-box-label">EMI Amount</div>
+          <div class="stat-box-value">₹<%= Number(loan.emi_amount).toLocaleString('en-IN') %></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title">EMI Schedule</h3>
+    <div class="notification-list">
+      <% if (emiSchedule && emiSchedule.length > 0) { %>
+        <% emiSchedule.forEach(emi => { %>
+          <div class="notification-item" style="padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <i class="fa-regular fa-user" style="color: #9a6b22; font-size: 1.2rem;"></i>
+              <span style="color: #0f172a; font-weight: 500; font-size: 1rem;">
+                <%= new Date(emi.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+              </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 24px;">
+              <span style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">
+                ₹<%= Number(emi.amount).toLocaleString('en-IN') %>
+              </span>
+              <% if (emi.status === 'PAID') { %>
+                <div style="padding: 4px 12px; border-radius: 8px; background-color: #f8fafc; border: 1px solid #f1f5f9; color: #f97316; font-size: 0.8rem; font-weight: 600;">Paid</div>
+              <% } else { %>
+                <a href="/customer/payments" style="padding: 6px 16px; border-radius: 8px; background-color: #0f172a; color: #ffffff; font-size: 0.8rem; font-weight: 600; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">Pay Now</a>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="notification-item" style="justify-content: center; background: transparent; border: none;">
+          <div class="notification-text" style="color: #cbd5e1;">No EMI schedule generated yet.</div>
+        </div>
+      <% } %>
+    </div>
+    
+    <div style="margin-top: 2rem; margin-bottom: 2rem;">
+      <a href="/customer/loans/<%= loan.id %>" class="btn btn-dark" style="display: block; text-align: center; width: 100%;">View Details</a>
+    </div>
+
+  <% } else { %>
+    <div class="notification-item" style="justify-content: center; background: transparent; border: none; flex-direction: column; padding: 4rem 1rem;">
+      <i class="fa-solid fa-file-invoice-dollar" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+      <div class="notification-text" style="color: #64748b; font-size: 1.1rem; text-align: center;">You don't have any active loans right now.</div>
+      <a href="/customer/apply" class="btn btn-primary" style="margin-top: 1.5rem;">Apply Now</a>
+    </div>
+  <% } %>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/customer/dashboard" class="nav-item">
+      <i class="fa-solid fa-building-columns"></i>
+      <span>Home</span>
+    </a>
+    <a href="/customer/loans" class="nav-item active">
+      <i class="fa-solid fa-file-invoice"></i>
+      <span>Loan</span>
+    </a>
+    <a href="/customer/apply" class="nav-item">
+      <i class="fa-regular fa-calendar-check"></i>
+      <span>Apply</span>
+    </a>
+    <a href="/customer/profile" class="nav-item">
+      <i class="fa-regular fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+</div>

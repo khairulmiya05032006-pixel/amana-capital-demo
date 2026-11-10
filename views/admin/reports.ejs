@@ -1,0 +1,251 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title"><%= title %></h1>
+    <p class="admin-page-desc">View financial metrics, overdue loans, and system activity logs.</p>
+  </div>
+</div>
+
+<div class="d-grid grid-cols-1 gap-4 mb-4">
+  
+  <!-- Left Column: Monthly Collections -->
+  <div class="admin-widget" id="collections-report-container">
+    <div class="admin-widget-header">
+      <h3 class="admin-widget-title m-0">Monthly Collections</h3>
+      <div class="d-flex gap-2">
+        <a href="/admin/reports/export/csv/collections" class="admin-btn admin-btn-secondary admin-btn-icon py-1 px-3 text-xs">
+          <i class="fa fa-file-csv mr-1"></i> CSV
+        </a>
+        <button onclick="exportPDF('collections-report-container', 'Monthly_Collections.pdf')" class="admin-btn admin-btn-secondary admin-btn-icon py-1 px-3 text-xs">
+          <i class="fa fa-file-pdf mr-1"></i> PDF
+        </button>
+      </div>
+    </div>
+    
+    <div style="height: 250px; margin-bottom: 1.5rem;">
+      <canvas id="collectionsChart"></canvas>
+    </div>
+    
+    <table class="admin-table w-100">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Total Collected</th>
+          <th># Payments</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (monthlyCollections && monthlyCollections.length > 0) { %>
+          <% monthlyCollections.forEach(row => { %>
+            <tr>
+              <td class="fw-500 text-body"><%= row.collection_month %></td>
+              <td class="fw-600 text-success"><%= formatINR(row.total_collected) %></td>
+              <td class="text-body"><%= row.number_of_payments %></td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="3" class="text-center text-muted py-5">
+              <div class="admin-empty-state">
+                <i class="fa fa-chart-line"></i>
+                <div class="admin-empty-title">No Collection Data</div>
+                <div class="admin-empty-desc">No collections have been recorded yet.</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Right Column: Audit Logs -->
+  <div class="admin-widget">
+    <div class="admin-widget-header">
+      <h3 class="admin-widget-title m-0">Recent Activity Log</h3>
+    </div>
+    <table class="admin-table w-100">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Action</th>
+          <th>Admin</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (auditLogs && auditLogs.length > 0) { %>
+          <% auditLogs.forEach(log => { %>
+            <tr>
+              <td class="text-xs text-muted"><%= formatDate(log.created_at) %></td>
+              <td>
+                <div class="fw-500 text-heading"><%= log.action_type %></div>
+                <div class="text-xs text-muted"><%= log.action_details %></div>
+              </td>
+              <td class="text-xs text-body"><%= log.admin_email || 'System' %></td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="3" class="text-center text-muted py-5">
+              <div class="admin-empty-state">
+                <i class="fa fa-history"></i>
+                <div class="admin-empty-title">No Recent Activity</div>
+                <div class="admin-empty-desc">No actions have been logged yet.</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Full Width: Overdue Loans -->
+<div class="admin-widget" id="overdue-report-container">
+  <div class="admin-widget-header">
+    <h3 class="admin-widget-title m-0">Overdue Installments</h3>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="text-xs text-muted bg-secondary-soft px-3 py-1 mr-2 rounded-pill" style="border-radius: 12px; background: rgba(0,0,0,0.05);">Showing latest 100 overdue</span>
+      <a href="/admin/reports/export/csv/overdue" class="admin-btn admin-btn-secondary admin-btn-icon py-1 px-3 text-xs">
+        <i class="fa fa-file-csv mr-1"></i> CSV
+      </a>
+      <button onclick="exportPDF('overdue-report-container', 'Overdue_Loans.pdf')" class="admin-btn admin-btn-secondary admin-btn-icon py-1 px-3 text-xs">
+        <i class="fa fa-file-pdf mr-1"></i> PDF
+      </button>
+    </div>
+  </div>
+
+  <table class="admin-table w-100">
+    <thead>
+      <tr>
+        <th>Loan Ref</th>
+        <th>Borrower</th>
+        <th>Due Date</th>
+        <th>Amount Due</th>
+        <th>Penalty</th>
+        <th>Total Due</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (overdueLoans && overdueLoans.length > 0) { %>
+        <% overdueLoans.forEach(loan => { %>
+          <tr>
+            <td class="fw-600 text-primary"><%= loan.loan_number %></td>
+            <td>
+              <div class="fw-500 text-heading"><%= loan.customer_name %></div>
+              <div class="text-xs text-muted"><%= loan.customer_phone %></div>
+            </td>
+            <td class="fw-600 text-danger"><%= formatDate(loan.due_date) %></td>
+            <td class="text-body"><%= formatINR(loan.installment_amount) %></td>
+            <td class="text-warning"><%= formatINR(loan.penalty_amount) %></td>
+            <td class="fw-600 text-danger"><%= formatINR(loan.amount_due) %></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="6" class="text-center text-muted py-5">
+            <div class="admin-empty-state">
+              <i class="fa fa-check-circle text-success"></i>
+              <div class="admin-empty-title">No Overdue Loans</div>
+              <div class="admin-empty-desc">All loans are currently up to date.</div>
+            </div>
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<script src="/vendor/html2pdf/html2pdf.bundle.min.js"></script>
+<script src="/vendor/chartjs/chart.umd.js"></script>
+<script type="application/json" id="reports-data"><%- JSON.stringify({ monthlyCollections: monthlyCollections || [] }) %></script>
+<script>
+  function exportPDF(elementId, filename) {
+    const element = document.getElementById(elementId);
+    
+    const opt = {
+      margin:       0.5,
+      filename:     filename,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#FAFAFC' }, // match light theme bg
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const rawData = JSON.parse(document.getElementById('reports-data').textContent).monthlyCollections;
+    
+    // Sort chronologically for the chart
+    const chartData = [...rawData].reverse();
+
+    const labels = chartData.map(d => d.collection_month);
+    const amounts = chartData.map(d => parseFloat(d.total_collected) || 0);
+
+    const ctx = document.getElementById('collectionsChart').getContext('2d');
+    
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Total Collected (₹)',
+          data: amounts,
+          backgroundColor: 'rgba(25, 85, 220, 0.2)', // var(--primary)
+          borderColor: '#1955DC',
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.y !== null) {
+                  label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed.y);
+                }
+                return label;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: '#475569',
+              callback: function(value) {
+                if (value >= 10000000) return '₹' + (value / 10000000).toFixed(1) + 'Cr';
+                if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + 'L';
+                if (value >= 1000) return '₹' + (value / 1000).toFixed(0) + 'K';
+                return '₹' + value;
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#475569'
+            }
+          }
+        }
+      }
+    });
+  });
+</script>

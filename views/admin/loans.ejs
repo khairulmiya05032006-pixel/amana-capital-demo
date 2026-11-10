@@ -1,0 +1,287 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Loans & Disbursement</h1>
+    <p class="admin-page-desc">Manage pending disbursements, active loans, and closed loans centrally.</p>
+  </div>
+</div>
+
+<div class="admin-widget mb-4">
+  <form action="/admin/loans" method="GET" class="d-flex gap-2">
+    <div class="input-group">
+      <span class="input-group-text"><i class="fa fa-search text-muted"></i></span>
+      <input type="text" name="q" class="form-control" placeholder="Search by customer name, phone, code, email, or loan number..." value="<%= searchQuery %>">
+    </div>
+    <button type="submit" class="btn btn-primary px-4">Search</button>
+    <% if (searchQuery) { %>
+      <a href="/admin/loans" class="btn btn-secondary">Clear</a>
+    <% } %>
+  </form>
+</div>
+
+<% if (searchQuery) { %>
+<div class="admin-widget mb-5 border border-primary shadow">
+  <div class="admin-widget-header bg-primary text-white">
+    <div class="admin-widget-title text-white w-100 d-flex justify-content-between align-items-center">
+      <span><i class="fa fa-search"></i> SEARCH RESULTS for "<%= searchQuery %>"</span>
+      <a href="/admin/loans" class="btn btn-sm btn-light text-primary fw-bold">Clear Search</a>
+    </div>
+  </div>
+  <div class="p-3">
+    <% const totalResults = applications.length + activeLoans.length + closedLoans.length; %>
+    <% if (totalResults === 0) { %>
+      <div class="text-center py-4 text-muted">No results found matching your search.</div>
+    <% } else { %>
+      <table class="admin-table w-100 table-hover">
+        <thead>
+          <tr>
+            <th>Type / Status</th>
+            <th>Customer</th>
+            <th>Reference No.</th>
+            <th>Amount / Details</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% applications.forEach(app => { %>
+            <tr>
+              <td>
+                <span class="admin-badge badge-warning">APPLICATION</span>
+                <div class="text-xs text-muted mt-1">Awaiting Disbursement</div>
+              </td>
+              <td>
+                <div class="fw-500"><%= app.customer_name %></div>
+                <div class="text-sm text-muted"><%= app.customer_code %></div>
+              </td>
+              <td class="fw-600"><%= app.application_number %></td>
+              <td>
+                <div class="text-success fw-600"><%= formatINR(app.approved_amount) %></div>
+                <div class="text-sm text-muted"><%= app.scheme_name %></div>
+              </td>
+              <td class="text-right">
+                <a href="/admin/applications/<%= app.application_id %>" class="btn btn-sm btn-outline-primary">View</a>
+                <% if (hasPermission('loans.disburse')) { %>
+                <form action="/admin/loans/<%= app.application_id %>/disburse" method="POST" class="d-inline disburse-form ms-1">
+                  <button type="button" class="btn btn-sm btn-success disburse-btn" data-app="<%= app.application_number %>">Disburse</button>
+                </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+
+          <% activeLoans.forEach(loan => { %>
+            <tr>
+              <td>
+                <span class="admin-badge badge-success">LOAN ACTIVE</span>
+                <div class="text-xs text-muted mt-1">Frequency: <%= loan.repayment_frequency %></div>
+              </td>
+              <td>
+                <div class="fw-500"><%= loan.customer_name %></div>
+                <div class="text-sm text-muted"><%= loan.customer_code %></div>
+              </td>
+              <td class="fw-600 text-primary"><%= loan.loan_number %></td>
+              <td>
+                <div class="text-danger fw-600">Outstanding: <%= formatINR(loan.outstanding_balance) %></div>
+                <div class="text-sm text-muted">Principal: <%= formatINR(loan.principal_amount) %></div>
+              </td>
+              <td class="text-right">
+                <a href="/admin/repayments?loanId=<%= loan.loan_id %>" class="btn btn-sm btn-outline-primary">View</a>
+              </td>
+            </tr>
+          <% }) %>
+
+          <% closedLoans.forEach(loan => { %>
+            <tr>
+              <td>
+                <span class="admin-badge badge-secondary">LOAN CLOSED</span>
+                <div class="text-xs text-muted mt-1">Frequency: <%= loan.repayment_frequency %></div>
+              </td>
+              <td>
+                <div class="fw-500"><%= loan.customer_name %></div>
+                <div class="text-sm text-muted"><%= loan.customer_code %></div>
+              </td>
+              <td class="fw-600"><%= loan.loan_number %></td>
+              <td>
+                <div class="text-muted fw-600">Principal: <%= formatINR(loan.principal_amount) %></div>
+              </td>
+              <td class="text-right">
+                <a href="/admin/repayments?loanId=<%= loan.loan_id %>" class="btn btn-sm btn-outline-secondary">View</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+</div>
+<% } %>
+
+<div class="admin-widget mb-5">
+  <div class="admin-widget-header">
+    <div class="admin-widget-title text-warning">
+      <i class="fa fa-hourglass-half"></i> Applications Awaiting Disbursement
+    </div>
+  </div>
+  <table class="admin-table w-100">
+    <thead>
+      <tr>
+        <th>Application No.</th>
+        <th>Customer</th>
+        <th>Scheme / Terms</th>
+        <th>Approved Amount</th>
+        <th>Approved On</th>
+        <th class="text-right">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (applications && applications.length > 0) { %>
+        <% applications.forEach(app => { %>
+          <tr>
+            <td>
+              <span class="fw-600"><%= app.application_number %></span>
+              <div class="text-xs text-muted mt-1">Source: <%= app.application_source %></div>
+            </td>
+            <td>
+              <div class="fw-500"><%= app.customer_name %></div>
+              <div class="text-sm text-muted"><%= app.customer_code %> | <%= app.customer_phone %></div>
+            </td>
+            <td>
+              <div class="fw-500 text-primary"><%= app.scheme_name %></div>
+              <div class="text-sm">
+                <%= app.approved_duration %> <%= (app.approved_duration_unit || 'months').toLowerCase() %>
+                <% if (app.interest_calculation_method === 'FLAT_AMOUNT' || app.approved_interest_amount !== null) { %>
+                  | Flat Int: <%= formatINR(app.approved_interest_amount || 0) %>
+                <% } else { %>
+                  @ <%= app.approved_interest_rate %>%
+                <% } %>
+              </div>
+            </td>
+            <td>
+              <span class="text-success fw-600"><%= formatINR(app.approved_amount) %></span>
+            </td>
+            <td class="text-sm"><%= formatDate(app.approved_at) %></td>
+            <td class="text-right">
+              <% if (hasPermission('loans.disburse')) { %>
+              <form action="/admin/loans/<%= app.application_id %>/disburse" method="POST" class="d-inline disburse-form" style="margin-bottom: .47rem;">
+                <button type="button" class="btn btn-sm btn-success disburse-btn" data-app="<%= app.application_number %>">
+                  <i class="fa fa-money-bill-wave me-1"></i> Disburse
+                </button>
+              </form>
+              <% } %>
+              <% if (hasPermission('applications.reject')) { %>
+              <form action="/admin/loans/<%= app.application_id %>/reject-disbursement" method="POST" class="d-inline ms-1">
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to reject the disbursement for this loan application? This action cannot be undone.');">
+                  <i class="fa fa-times me-1"></i> Reject
+                </button>
+                </form>
+                <% } %>
+              </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">No applications awaiting disbursement.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<div class="admin-widget mb-5">
+  <div class="admin-widget-header">
+    <div class="admin-widget-title text-success">
+      <i class="fa fa-hand-holding-usd"></i> Active Loans
+    </div>
+  </div>
+  <table class="admin-table w-100">
+    <thead>
+      <tr>
+        <th>Loan No.</th>
+        <th>Customer</th>
+        <th>Principal</th>
+        <th>Outstanding</th>
+        <th>Start Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (activeLoans && activeLoans.length > 0) { %>
+        <% activeLoans.forEach(loan => { %>
+          <tr>
+            <td class="fw-600 text-primary"><%= loan.loan_number %></td>
+            <td>
+              <div class="fw-500"><%= loan.customer_name %></div>
+              <div class="text-sm text-muted"><%= loan.customer_code %></div>
+            </td>
+            <td><%= formatINR(loan.principal_amount) %></td>
+            <td class="text-danger fw-600"><%= formatINR(loan.outstanding_balance) %></td>
+            <td class="text-sm"><%= formatDate(loan.first_installment_date) %></td>
+            <td><span class="admin-badge badge-success">ACTIVE</span></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">No active loans found.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<div class="admin-widget" id="closed-loans-section">
+  <div class="admin-widget-header">
+    <div class="admin-widget-title text-muted">
+      <i class="fa fa-check-circle"></i> Closed Loans
+    </div>
+  </div>
+  <table class="admin-table w-100">
+    <thead>
+      <tr>
+        <th>Loan No.</th>
+        <th>Customer</th>
+        <th>Principal</th>
+        <th>Maturity Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (closedLoans && closedLoans.length > 0) { %>
+        <% closedLoans.forEach(loan => { %>
+          <tr>
+            <td class="fw-600"><%= loan.loan_number %></td>
+            <td>
+              <div class="fw-500"><%= loan.customer_name %></div>
+              <div class="text-sm text-muted"><%= loan.customer_code %></div>
+            </td>
+            <td><%= formatINR(loan.principal_amount) %></td>
+            <td class="text-sm"><%= formatDate(loan.maturity_date) %></td>
+            <td><span class="admin-badge badge-secondary">CLOSED</span></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="5" class="text-center py-4 text-muted">No closed loans found.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.disburse-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const appNumber = this.getAttribute('data-app');
+      const form = this.closest('.disburse-form');
+      if (confirm(`Are you sure you want to disburse application ${appNumber}? This action cannot be undone.`)) {
+        this.disabled = true;
+        this.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Processing...';
+        form.submit();
+      }
+    });
+  });
+});
+</script>
+

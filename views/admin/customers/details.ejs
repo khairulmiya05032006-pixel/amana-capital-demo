@@ -1,0 +1,501 @@
+<% layout('layouts/adminLayout') %>
+
+<% 
+  const safeFormatINR = typeof formatINR === 'function' ? formatINR : (v) => '₹' + Number(v || 0).toLocaleString('en-IN');
+  const safeFormatDate = typeof formatDate === 'function' ? formatDate : (d) => d ? new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+
+  const totalBorrowed = loans ? loans.reduce((sum, l) => sum + Number(l.principal_amount || 0), 0) : 0;
+  const totalOutstanding = loans ? loans.reduce((sum, l) => sum + Number(l.outstanding_balance || 0), 0) : 0;
+  const totalRepaid = payments ? payments.reduce((sum, p) => sum + Number(p.amount || 0), 0) : 0;
+  const activeLoansCount = loans ? loans.filter(l => l.loan_status === 'ACTIVE').length : 0;
+  const closedLoansCount = loans ? loans.filter(l => l.loan_status === 'CLOSED').length : 0;
+%>
+
+<!-- Page Header -->
+<div class="admin-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a href="/admin/customers" class="admin-btn admin-btn-secondary admin-btn-icon" title="Back to Customers">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+        <h1 class="admin-page-title m-0"><%= customer.full_name %></h1>
+        <span class="admin-badge <%= customer.pending_apps > 0 ? 'badge-warning' : (customer.account_status === 'ACTIVE' ? 'badge-success' : 'badge-danger') %>">
+          <%= customer.pending_apps > 0 ? 'UNDER REVIEW' : (customer.account_status === 'ACTIVE' ? 'ACTIVE' : customer.account_status) %>
+        </span>
+      </div>
+      <p class="admin-page-desc m-0">
+        Customer Ref: <span class="fw-600 text-primary"><%= customer.customer_code %></span> &bull; 
+        Registered: <span class="fw-500 text-heading"><%= safeFormatDate(customer.created_at) %></span>
+      </p>
+    </div>
+  </div>
+  
+  <div class="d-flex flex-column align-items-md-end gap-2 mt-3 mt-md-0">
+    <div class="d-flex gap-2 flex-wrap justify-content-md-end">
+      <a href="/admin/customers/<%= customer.id %>/edit" class="admin-btn admin-btn-primary">
+        <i class="fa fa-edit me-1"></i> Edit Profile
+      </a>
+      
+      <% if (customer.account_status === 'ACTIVE') { %>
+        <form action="/admin/customers/<%= customer.id %>/deactivate" method="POST" class="mb-0">
+          <button type="submit" class="admin-btn admin-btn-secondary" style="color: #9A3412; border-color: #FFEDD5; background-color: #FFF7ED;" onclick="return confirm('Are you sure you want to deactivate this customer account?')">
+            <i class="fa fa-ban me-1"></i> Deactivate
+          </button>
+        </form>
+      <% } else { %>
+        <form action="/admin/customers/<%= customer.id %>/reactivate" method="POST" class="mb-0">
+          <button type="submit" class="admin-btn admin-btn-success">
+            <i class="fa fa-check me-1"></i> Reactivate Account
+          </button>
+        </form>
+      <% } %>
+      
+      <% if (typeof deletionEligibility !== 'undefined' && deletionEligibility.allowed) { %>
+        <button type="button" class="admin-btn admin-btn-secondary" style="color: #DC2626; border-color: #FEE2E2; background-color: #FEF2F2;" data-bs-toggle="modal" data-bs-target="#deleteCustomerModal">
+          <i class="fa fa-trash-alt me-1"></i> Delete Customer
+        </button>
+      <% } else { %>
+        <button type="button" class="admin-btn admin-btn-secondary" disabled style="opacity: 0.6; cursor: not-allowed; color: #DC2626; border-color: #FEE2E2; background-color: #FEF2F2;" title="<%= deletionEligibility.reason %>">
+          <i class="fa fa-trash-alt me-1"></i> Delete Customer
+        </button>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- Top Financial KPI Summary Cards -->
+<div class="admin-kpi-grid mb-4">
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-blue">
+      <i class="fa fa-hand-holding-usd"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label" style="color: #1955DC;">Total Borrowed</span>
+      <span class="admin-kpi-value" style="font-size: 1.15rem;"><%= safeFormatINR(totalBorrowed) %></span>
+      <span class="text-xs text-muted mt-1"><%= loans ? loans.length : 0 %> Total Application(s)</span>
+    </div>
+  </div>
+
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-amber">
+      <i class="fa fa-file-invoice-dollar"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label" style="color: #F59E0B;">Outstanding Balance</span>
+      <span class="admin-kpi-value" style="font-size: 1.15rem; color: <%= totalOutstanding > 0 ? '#DC2626' : '#16A34A' %>;"><%= safeFormatINR(totalOutstanding) %></span>
+      <span class="text-xs text-muted mt-1"><%= activeLoansCount %> Active Loan(s)</span>
+    </div>
+  </div>
+
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-green">
+      <i class="fa fa-check-circle"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label" style="color: #16A34A;">Total Repaid</span>
+      <span class="admin-kpi-value" style="font-size: 1.15rem; color: #16A34A;"><%= safeFormatINR(totalRepaid) %></span>
+      <span class="text-xs text-muted mt-1"><%= payments ? payments.length : 0 %> Payment Record(s)</span>
+    </div>
+  </div>
+
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-teal">
+      <i class="fa fa-wallet"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label" style="color: #14B8A6;">Monthly Income</span>
+      <span class="admin-kpi-value" style="font-size: 1.15rem;"><%= safeFormatINR(customer.monthly_income) %></span>
+      <span class="text-xs text-muted mt-1">Verified Income</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main 360 Grid Layout -->
+<div class="d-grid grid-cols-1 gap-4 align-items-start">
+  
+  <!-- Left Column: Customer Dossier & KYC Profile -->
+  <div class="d-flex flex-column gap-4">
+    
+    <div class="admin-widget">
+      <!-- Profile Header & Avatar -->
+      <div class="text-center pb-4 mb-4" style="border-bottom: 1px solid var(--admin-border);">
+        <div class="admin-avatar-lg position-relative" style="box-shadow: 0 4px 14px rgba(25, 85, 220, 0.2);">
+          <i class="fa fa-user"></i>
+        </div>
+        <h2 class="text-heading fw-700 mb-1" style="font-size: 1.25rem;"><%= customer.full_name %></h2>
+        <div class="text-sm text-primary fw-600 mb-2"><%= customer.customer_code %></div>
+        <span class="admin-badge <%= customer.pending_apps > 0 ? 'badge-warning' : (customer.account_status === 'ACTIVE' ? 'badge-success' : 'badge-danger') %> px-3 py-1">
+          <i class="fa fa-circle me-1 text-xs"></i> Account <%= customer.pending_apps > 0 ? 'UNDER REVIEW' : customer.account_status %>
+        </span>
+      </div>
+
+      <!-- Contact Details -->
+      <div class="mb-4">
+        <h4 class="text-xs text-muted text-uppercase fw-700 tracking-wider mb-3" style="letter-spacing: 0.05em;">Contact Information</h4>
+        
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: #DBEAFE; color: #1955DC; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <i class="fa fa-envelope"></i>
+          </div>
+          <div style="min-width: 0; word-break: break-all;">
+            <div class="text-xs text-muted">Email Address</div>
+            <div class="fw-600 text-heading text-sm"><%= customer.email %></div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: #DCFCE7; color: #16A34A; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <i class="fa fa-phone"></i>
+          </div>
+          <div>
+            <div class="text-xs text-muted">Phone Number</div>
+            <div class="fw-600 text-heading text-sm"><%= customer.phone %></div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: #FEF3C7; color: #F59E0B; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <i class="fa fa-map-marker-alt"></i>
+          </div>
+          <div>
+            <div class="text-xs text-muted">Residential Address</div>
+            <div class="fw-500 text-body text-sm"><%= customer.address || 'Address not provided' %></div>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border-color: var(--admin-border); margin: 0 0 1.25rem 0;">
+
+      <!-- KYC & Verification Documents -->
+      <div class="mb-4">
+        <h4 class="text-xs text-muted text-uppercase fw-700 tracking-wider mb-3" style="letter-spacing: 0.05em;">Identity & KYC Verification</h4>
+        
+        <div class="d-grid gap-3 responsive-subgrid" style="grid-template-columns: 1fr 1fr;">
+          <div class="p-3 rounded border" style="background-color: #F8FAFC; border-color: #E5E7EB !important; border-radius: 10px;">
+            <div class="text-xs text-muted mb-1"><i class="fa fa-id-card me-1 text-primary"></i> Aadhaar Number</div>
+            <div class="fw-600 text-heading text-sm"><%= customer.aadhaar_number || 'N/A' %></div>
+          </div>
+          
+          <div class="p-3 rounded border" style="background-color: #F8FAFC; border-color: #E5E7EB !important; border-radius: 10px;">
+            <div class="text-xs text-muted mb-1"><i class="fa fa-credit-card me-1 text-purple" style="color: #9333EA;"></i> PAN Number</div>
+            <div class="fw-600 text-heading text-sm"><%= customer.pan_number || 'N/A' %></div>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border-color: var(--admin-border); margin: 0 0 1.25rem 0;">
+
+      <!-- Employment & Demographics -->
+      <div>
+        <h4 class="text-xs text-muted text-uppercase fw-700 tracking-wider mb-3" style="letter-spacing: 0.05em;">Employment & Personal Info</h4>
+        
+        <div class="d-grid gap-3 responsive-subgrid" style="grid-template-columns: 1fr 1fr;">
+          <div>
+            <div class="text-xs text-muted mb-1">Occupation</div>
+            <div class="fw-600 text-heading text-sm"><%= customer.occupation || 'Unspecified' %></div>
+          </div>
+          <div>
+            <div class="text-xs text-muted mb-1">Monthly Income</div>
+            <div class="fw-600 text-success text-sm"><%= safeFormatINR(customer.monthly_income) %>/mo</div>
+          </div>
+          <div>
+            <div class="text-xs text-muted mb-1">Gender</div>
+            <div class="fw-500 text-heading text-sm" style="text-transform: capitalize;"><%= customer.gender || 'Not specified' %></div>
+          </div>
+          <div>
+            <div class="text-xs text-muted mb-1">Date of Birth</div>
+            <div class="fw-500 text-heading text-sm"><%= safeFormatDate(customer.date_of_birth) %></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Right Column: Loans & Payments History Widgets -->
+  <div class="d-flex grid-cols-2 gap-4">
+    
+    <!-- Loans Portfolio Widget -->
+    <div class="admin-widget">
+      <div class="admin-widget-header flex-wrap gap-2">
+        <h3 class="admin-widget-title">
+          <i class="fa fa-file-invoice-dollar" style="color: #1955DC;"></i> Loan Portfolio
+        </h3>
+        <span class="text-xs fw-600 text-muted">
+          <%= activeLoansCount %> Active &bull; <%= closedLoansCount %> Closed
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table w-100">
+          <thead>
+            <tr>
+              <th>Loan ID</th>
+              <th>Type</th>
+              <th>Principal</th>
+              <th>Outstanding</th>
+              <th>Status</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (loans && loans.length > 0) { %>
+              <% loans.forEach(loan => { %>
+                <% 
+                  const principal = Number(loan.principal_amount || 0);
+                  const balance = Number(loan.outstanding_balance || 0);
+                  const repaidPct = principal > 0 ? Math.min(100, Math.max(0, Math.round(((principal - balance) / principal) * 100))) : 0;
+                %>
+                <tr>
+                  <td>
+                    <div class="fw-700 text-primary"><%= loan.loan_number || 'PENDING' %></div>
+                    <div class="text-xs text-muted"><%= safeFormatDate(loan.created_at || loan.issued_date) %></div>
+                  </td>
+                  <td class="fw-500 text-heading text-sm"><%= loan.type_name || 'Personal Loan' %></td>
+                  <td class="fw-600 text-heading text-sm"><%= safeFormatINR(loan.principal_amount) %></td>
+                  <td>
+                    <div class="fw-700 text-sm" style="color: <%= balance > 0 ? '#DC2626' : '#16A34A' %>;">
+                      <%= safeFormatINR(loan.outstanding_balance) %>
+                    </div>
+                    <div class="progress mt-1" style="height: 4px; background-color: #E5E7EB; border-radius: 2px; overflow: hidden; width: 80px;">
+                      <div class="progress-bar" style="width: <%= repaidPct %>%; background-color: <%= repaidPct === 100 ? '#16A34A' : '#1955DC' %>; height: 100%;"></div>
+                    </div>
+                  </td>
+                  <td>
+                    <% if (loan.loan_status === 'ACTIVE') { %>
+                      <span class="admin-badge badge-success"><i class="fa fa-circle text-xs me-1"></i> ACTIVE</span>
+                    <% } else if (loan.loan_status === 'CLOSED') { %>
+                      <span class="admin-badge badge-purple"><i class="fa fa-check text-xs me-1"></i> CLOSED</span>
+                    <% } else if (loan.loan_status === 'DEFAULTED') { %>
+                      <span class="admin-badge badge-danger"><i class="fa fa-exclamation-triangle text-xs me-1"></i> DEFAULTED</span>
+                    <% } else { %>
+                      <span class="admin-badge badge-warning"><%= loan.loan_status %></span>
+                    <% } %>
+                  </td>
+                  <td class="text-right">
+                    <button type="button" class="admin-btn admin-btn-secondary py-1 px-2 text-xs" data-bs-toggle="modal" data-bs-target="#loanModal<%= loan.id %>" title="View Repayment Schedule">
+                      <i class="fa fa-eye me-1"></i> Details
+                    </button>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="text-center py-5">
+                  <div class="admin-empty-state py-3">
+                    <i class="fa fa-folder-open text-muted mb-2" style="font-size: 2rem;"></i>
+                    <div class="admin-empty-title text-sm">No Loans Found</div>
+                    <div class="admin-empty-desc text-xs mb-0">This customer has not taken any loans yet.</div>
+                  </div>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Payment Receipts & History Widget -->
+    <div class="admin-widget">
+      <div class="admin-widget-header flex-wrap gap-2">
+        <h3 class="admin-widget-title">
+          <i class="fa fa-receipt" style="color: #16A34A;"></i> Payment History & Receipts
+        </h3>
+        <span class="text-xs fw-600 text-success">
+          Total Repaid: <%= safeFormatINR(totalRepaid) %>
+        </span>
+      </div>
+
+      <div class="table-responsive" style="max-height: 320px; overflow-y: auto; border-bottom: 1px solid var(--surface-200);">
+        <table class="admin-table w-100" style="position: relative;">
+          <thead style="position: sticky; top: 0; z-index: 10; background: #f8fafc; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <tr>
+              <th>Date</th>
+              <th>Receipt Ref</th>
+              <th>Loan No.</th>
+              <th>Method</th>
+              <th class="text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (payments && payments.length > 0) { %>
+              <% payments.forEach(payment => { %>
+                <tr>
+                  <td class="text-sm text-body"><%= safeFormatDate(payment.payment_date) %></td>
+                  <td>
+                    <div class="fw-600 text-heading text-sm"><%= payment.receipt_number || payment.transaction_reference || ('PAY-' + payment.id) %></div>
+                  </td>
+                  <td class="text-sm fw-600 text-primary"><%= payment.loan_number %></td>
+                  <td>
+                    <span class="admin-badge badge-secondary text-xs" style="text-transform: capitalize;">
+                      <i class="fa fa-credit-card me-1"></i> <%= (payment.payment_method || 'Online').replace('_', ' ') %>
+                    </span>
+                  </td>
+                  <td class="text-right fw-700 text-success text-sm">+<%= safeFormatINR(payment.payment_amount) %></td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="5" class="text-center py-5">
+                  <div class="admin-empty-state py-3">
+                    <i class="fa fa-receipt text-muted mb-2" style="font-size: 2rem;"></i>
+                    <div class="admin-empty-title text-sm">No Repayments Recorded</div>
+                    <div class="admin-empty-desc text-xs mb-0">There are no payment receipts recorded for this customer.</div>
+                  </div>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EMI Details Modals -->
+<% if (loans && loans.length > 0) { %>
+  <% loans.forEach(loan => { %>
+    <div class="modal fade" id="loanModal<%= loan.id %>" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+          <div class="modal-header" style="background: #F8FAFC; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; gap: 12px;">
+            <h5 class="modal-title fw-700 text-heading" style="text-align: left;">
+              <i class="fa fa-calendar-alt text-primary me-2" style="margin: 8px;"></i>EMI Schedule - <%= loan.loan_number || 'PENDING' %>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
+          </div>
+          <div class="modal-body" style="padding: .75rem">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+              <table class="admin-table w-100">
+                <thead>
+                  <tr>
+                    <th>Inst #</th>
+                    <th>Due Date</th>
+                    <th class="text-right">EMI Amount</th>
+                    <th class="text-right">Paid</th>
+                    <th class="text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% 
+                    const loanInstallments = typeof installments !== 'undefined' ? installments.filter(i => i.loan_id === loan.id) : []; 
+                  %>
+                  <% if (loanInstallments.length > 0) { %>
+                    <% loanInstallments.forEach(inst => { %>
+                      <tr>
+                        <td class="fw-600 text-muted">#<%= inst.installment_number %></td>
+                        <td class="fw-500 text-body"><%= safeFormatDate(inst.due_date) %></td>
+                        <td class="text-right fw-700 text-heading"><%= safeFormatINR(inst.total_amount) %></td>
+                        <td class="text-right fw-600" style="color: <%= inst.paid_amount > 0 ? '#16A34A' : '#9CA3AF' %>"><%= safeFormatINR(inst.paid_amount || 0) %></td>
+                        <td class="text-center">
+                          <% if (inst.installment_status === 'PAID') { %>
+                            <span class="admin-badge badge-success px-2 py-1" style="font-size: 0.7rem;">PAID</span>
+                          <% } else if (inst.installment_status === 'OVERDUE') { %>
+                            <span class="admin-badge badge-danger px-2 py-1" style="font-size: 0.7rem;">OVERDUE</span>
+                          <% } else if (inst.installment_status === 'PARTIAL') { %>
+                            <span class="admin-badge badge-warning px-2 py-1" style="font-size: 0.7rem;">PARTIAL</span>
+                          <% } else { %>
+                            <span class="admin-badge badge-secondary px-2 py-1" style="font-size: 0.7rem;">PENDING</span>
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="5" class="text-center py-5">
+                        <div class="text-muted"><i class="fa fa-info-circle me-1"></i> No EMI details generated for this loan yet.</div>
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer bg-light" style="border-top: 1px solid #E5E7EB; padding: 1rem; ">
+            <button type="button" class="admin-btn admin-btn-secondary" data-bs-dismiss="modal" onclick="this.blur()">Close</button>
+            <a href="/admin/repayments?loanId=<%= loan.loan_number || loan.id %>" class="admin-btn admin-btn-primary">
+              Full Ledger <i class="fa fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+<% } %>
+<br>
+
+<% if (typeof deletionEligibility !== 'undefined' && deletionEligibility.allowed) { %>
+<!-- Delete Customer Confirmation Modal -->
+<div class="modal fade" id="deleteCustomerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content radius-md" style="border: none; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+      <div class="modal-header" style="background: #FEF2F2; border-bottom: 1px solid #FEE2E2; padding: .23rem;">
+        <h5 class="modal-title fw-700 text-danger">
+          <i class="fa fa-exclamation-triangle me-2"></i>Delete Customer Permanently?
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-body mb-3">This action will permanently remove the customer's account and eligible customer-related records. This action cannot be undone.</p>
+        <div class="p-3 mb-3" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;">
+          <strong style="color: #0f172a; margin: .75rem"><%= customer.full_name %></strong><br>
+          <span class="text-muted text-sm" style="margin-left: .75rem;">Customer Code: <%= customer.customer_code %></span>
+          
+          <hr style="margin: 10px 0; border-color: #515963;">
+          
+          <% if (typeof deletionEligibility !== 'undefined' && deletionEligibility.state) { %>
+            <div class="d-grid gap-2 text-sm" style="padding: 1rem;">
+              <div class="d-flex justify-content-between text-body"><span>Loans:</span> <strong><%= deletionEligibility.state.closedLoans %> Closed</strong></div>
+              <div class="d-flex justify-content-between text-body"><span>Active Loans:</span> <strong><%= deletionEligibility.state.activeLoans %></strong></div>
+              <div class="d-flex justify-content-between text-body"><span>Outstanding:</span> <strong><%= safeFormatINR(deletionEligibility.state.outstandingBalance) %></strong></div>
+              <div class="d-flex justify-content-between text-body"><span>Pending Payments:</span> <strong><%= deletionEligibility.state.pendingInstallments %></strong></div>
+              <div class="d-flex justify-content-between text-body"><span>Overdue:</span> <strong><%= deletionEligibility.state.overdueInstallments %></strong></div>
+              <div class="d-flex justify-content-between text-body"><span>Unpaid Penalties:</span> <strong><%= deletionEligibility.state.unpaidPenalties %></strong></div>
+              <div class="d-flex justify-content-between text-body"><span>Pending Applications:</span> <strong><%= deletionEligibility.state.pendingApplications %></strong></div>
+              <div class="d-flex justify-content-between text-body"><span>Approved Undisbursed Applications:</span> <strong><%= deletionEligibility.state.approvedUndisbursedApplications %></strong></div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+      <div class="modal-footer bg-light" style="border-top: 1px solid #E5E7EB; display: flex; gap: 1rem; padding-top: .76rem;">
+        <button type="button" class="admin-btn admin-btn-secondary" data-bs-dismiss="modal" onclick="this.blur()">Cancel</button>
+        <form action="/admin/customers/<%= customer.id %>/delete" method="POST" class="mb-0">
+          <button type="submit" class="admin-btn" style="background-color: #DC2626; color: white; border: none;">
+            <i class="fa fa-trash-alt me-1"></i> Delete Customer Permanently
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const modalEl = this.closest('.modal');
+        if (modalEl) {
+          if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) {
+              modalInstance.hide();
+              return;
+            }
+          }
+          // Fallback manual close
+          modalEl.classList.remove('show');
+          modalEl.style.display = 'none';
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+          const backdrop = document.querySelector('.modal-backdrop');
+          if (backdrop) backdrop.remove();
+        }
+      });
+    });
+  });
+</script>

@@ -1,0 +1,11 @@
+CREATE INDEX idx_application_history_application
+ON application_status_history(application_id);
+
+CREATE INDEX idx_application_history_new_status
+ON application_status_history(new_status);
+
+CREATE INDEX idx_application_history_changed_by
+ON application_status_history(changed_by);
+
+CREATE INDEX idx_application_history_changed_at
+ON application_status_history(changed_at);

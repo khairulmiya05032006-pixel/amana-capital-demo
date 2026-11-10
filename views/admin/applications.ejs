@@ -1,0 +1,118 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Loan Applications</h1>
+    <p class="admin-page-desc">Review and manage customer loan applications.</p>
+  </div>
+</div>
+
+<div class="admin-widget mb-4">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <button type="button" class="admin-btn admin-btn-primary tab-filter-btn active" data-status="ALL">All</button>
+    <button type="button" class="admin-btn admin-btn-secondary tab-filter-btn" data-status="PENDING">Pending</button>
+    <button type="button" class="admin-btn admin-btn-secondary tab-filter-btn" data-status="APPROVED">Approved</button>
+    <button type="button" class="admin-btn admin-btn-secondary tab-filter-btn" data-status="REJECTED">Rejected</button>
+  </div>
+
+  <table class="admin-table w-100" id="applicationsTable">
+    <thead>
+      <tr>
+        <th>App No.</th>
+        <th>Applicant Name</th>
+        <th>Phone</th>
+        <th>Loan Type</th>
+        <th>Requested Amount</th>
+        <th>Duration</th>
+        <th>Status</th>
+        <th>Applied Date</th>
+        <th class="text-right">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (applications && applications.length > 0) { %>
+        <% applications.forEach(app => { %>
+          <tr class="app-row" data-status="<%= app.application_status %>">
+            <td class="fw-600 text-primary"><%= app.application_number %></td>
+            <td class="fw-500 text-heading"><%= app.applicant_name || 'N/A' %></td>
+            <td class="text-body"><%= app.applicant_phone || 'N/A' %></td>
+            <td class="text-body"><%= app.loan_type_name || 'General' %></td>
+            <td class="fw-600 text-heading">₹<%= Number(app.requested_amount).toLocaleString('en-IN') %></td>
+            <td class="text-body"><%= app.requested_duration_months %> Months</td>
+            <td>
+              <% if (app.application_status === 'PENDING' || app.application_status === 'UNDER_REVIEW') { %>
+                <span class="admin-badge badge-warning">PENDING</span>
+              <% } else if (app.application_status === 'APPROVED') { %>
+                <span class="admin-badge badge-success">APPROVED</span>
+              <% } else if (app.application_status === 'REJECTED') { %>
+                <span class="admin-badge badge-danger">REJECTED</span>
+              <% } else { %>
+                <span class="admin-badge badge-secondary"><%= app.application_status %></span>
+              <% } %>
+            </td>
+            <td class="text-sm text-body"><%= new Date(app.created_at || app.applied_at).toLocaleDateString('en-IN') %></td>
+            <td class="text-right">
+              <% if (app.application_status === 'APPROVED' || app.application_status === 'REJECTED' || app.application_status === 'DISBURSED') { %>
+                <button type="button" class="admin-btn admin-btn-secondary py-1 px-3 disabled" disabled style="opacity: 0.65; cursor: not-allowed;">
+                  <i class="fa <%= app.application_status === 'REJECTED' ? 'fa-times-circle text-danger' : 'fa-check-circle text-success' %> me-1"></i> 
+                  <%= app.application_status === 'DISBURSED' ? 'Disbursed' : 'Reviewed' %>
+                </button>
+              <% } else { %>
+                <a href="/admin/applications/<%= app.id %>" class="admin-btn admin-btn-primary py-1 px-3">Review</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr id="emptyRow">
+          <td colspan="9" class="text-center text-muted py-5">
+            <div class="admin-empty-state">
+              <i class="fa fa-folder-open"></i>
+              <div class="admin-empty-title">No applications found</div>
+              <div class="admin-empty-desc">There are no loan applications submitted yet.</div>
+            </div>
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+document.querySelectorAll('.tab-filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-filter-btn').forEach(b => {
+      b.classList.remove('active', 'admin-btn-primary');
+      b.classList.add('admin-btn-secondary');
+    });
+    this.classList.add('active', 'admin-btn-primary');
+    this.classList.remove('admin-btn-secondary');
+
+    const filterStatus = this.getAttribute('data-status');
+    const rows = document.querySelectorAll('.app-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const status = row.getAttribute('data-status');
+      if (filterStatus === 'ALL' || status === filterStatus || (filterStatus === 'PENDING' && status === 'UNDER_REVIEW')) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+});
+
+// Auto-select tab based on query parameter
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const statusParam = urlParams.get('status');
+  if (statusParam) {
+    const targetBtn = document.querySelector(`.tab-filter-btn[data-status="${statusParam.toUpperCase()}"]`);
+    if (targetBtn) {
+      targetBtn.click();
+    }
+  }
+});
+</script>

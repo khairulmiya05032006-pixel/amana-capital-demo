@@ -1,0 +1,149 @@
+<% layout('layouts/main') %>
+
+<div class="dashboard-app-container">
+  
+  <!-- Header -->
+  <header class="app-header">
+    <div class="user-profile-section ">
+      <div class="user-avatar">
+        <!-- Generative dummy avatar like the mockup -->
+        <img src="<%= (typeof user !== 'undefined' && (user.profile_photo || user.avatar)) ? (user.profile_photo || user.avatar) : '/images/avatar.svg' %>" alt="Avatar">
+      </div>
+      <div class="user-greeting">
+        <span class="greeting-text">Hi, <%= user.first_name || 'Customer' %></span>
+        <span class="user-name">Welcome</span>
+      </div>
+    </div>
+    <div class="notification-bell">
+      <i class="fa-regular fa-bell"></i>
+      <div class="notification-badge"></div>
+    </div>
+  </header>
+
+  <!-- Gradient Cards -->
+  <div class="cards-container">
+    <!-- Overdue Card -->
+    <div class="premium-card card-blue">
+      <span class="card-label">Overall Outstanding</span>
+      <h2 class="card-value">₹<%= Number(dashboardData.overallOutstanding || 0).toLocaleString('en-IN') %></h2>
+      <div class="card-badge text-blue">Active</div>
+    </div>
+
+    <% if (dashboardData.upcomingPayments && dashboardData.upcomingPayments.length > 0) { %>
+      <% dashboardData.upcomingPayments.forEach(p => { %>
+        <!-- Dynamic Payment Card -->
+        <div class="premium-card card-red mb-3">
+          <span class="card-label">Next Payment</span>
+          <h2 class="card-value">₹<%= Number(p.amount).toLocaleString('en-IN') %></h2>
+          <div class="card-meta mt-1" style="color: rgba(255, 255, 255, 0.9); font-size: 0.9rem;">
+            <%= p.status === 'OVERDUE' ? 'Overdue' : 'Due' %>: <strong><%= p.dueDateString %></strong><br>
+            <small><%= p.scheme_name %></small>
+          </div>
+          <div class="card-badge <%= p.status === 'OVERDUE' ? 'text-danger' : 'text-green' %>"><%= p.status === 'OVERDUE' ? 'Overdue' : 'Due' %></div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="premium-card card-red mb-3">
+        <span class="card-label">Upcoming Payments</span>
+        <h2 class="card-value" style="font-size: 1.25rem;">No Pending Payments</h2>
+        <div class="card-badge text-green">Clear</div>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Quick Actions -->
+  <span class="section-title">Quick Actions</span>
+  <div class="y-axis-line"></div>
+  <br>
+  <div class="quick-actions-grid">
+    <a href="/customer/loans" class="action-btn">
+      <div class="action-icon blue">
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+      </div>
+      <span class="action-label">Loan Details</span>
+    </a>
+    
+    <a href="/customer/payments" class="action-btn">
+      <div class="action-icon orange">
+        <i class="fa-solid fa-money-bill-transfer"></i>
+      </div>
+      <span class="action-label">Pay Now</span>
+    </a>
+    
+    <a href="/customer/apply" class="action-btn">
+      <div class="action-icon green">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+      <span class="action-label">Apply Loan</span>
+    </a>
+
+    <a href="/customer/status" class="action-btn" style="position: relative;">
+      <div class="action-icon purple" style="background: #f3e8ff; color: #a855f7;">
+        <i class="fa-solid fa-bars-progress"></i>
+      </div>
+      <span class="action-label">Track Status</span>
+      <% 
+        let pendingCount = applications ? applications.filter(a => a.application_status === 'PENDING' || a.application_status === 'UNDER_REVIEW').length : 0;
+        if (pendingCount > 0) { 
+      %>
+        <div style="position: absolute; top: -5px; right: 15px; background: #ef4444; color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.65rem; font-weight: bold;"><%= pendingCount %></div>
+      <% } %>
+    </a>
+  </div>
+
+  <!-- Recent Notifications -->
+  <h3 class="section-title">Recent Notification</h3>
+  <div class="notification-list">
+    
+    <% if (notifications && notifications.length > 0) { %>
+      <% notifications.forEach(n => { %>
+        <div class="notification-item">
+          <div class="notification-icon">
+            <i class="fa-regular fa-bell"></i>
+          </div>
+          <div class="notification-text">
+            <%= n.text %>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <% if (applications && applications.length > 0) { %>
+      <div class="notification-item">
+        <div class="notification-icon">
+          <i class="fa-regular fa-user"></i>
+        </div>
+        <div class="notification-text">
+          Application #<%= applications[0].application_number %> is <%= applications[0].application_status.toLowerCase() %>
+        </div>
+      </div>
+    <% } %>
+
+    <% if ((!emiSchedule || emiSchedule.length === 0) && (!applications || applications.length === 0)) { %>
+      <div class="notification-item" style="justify-content: center; background: transparent; border: none; padding-top: 2rem;">
+        <div class="notification-text" style="color: #0B1120;">No recent notifications</div>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/customer/dashboard" class="nav-item active">
+      <i class="fa-solid fa-building-columns"></i>
+      <span>Home</span>
+    </a>
+    <a href="/customer/loans" class="nav-item">
+      <i class="fa-solid fa-file-invoice"></i>
+      <span>Loan</span>
+    </a>
+    <a href="/customer/apply" class="nav-item">
+      <i class="fa-regular fa-calendar-check"></i>
+      <span>Apply</span>
+    </a>
+    <a href="/customer/profile" class="nav-item">
+      <i class="fa-regular fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+  
+</div>

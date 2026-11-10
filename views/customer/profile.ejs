@@ -1,0 +1,120 @@
+<% layout('layouts/main') %>
+
+<div class="dashboard-app-container">
+  <div class="user-profile-container">
+  <div class="app-header-back" style="margin-bottom: .98rem;">
+    <h1 class="page-title-center" style="text-align: left;">My Account</h1>
+  </div>
+
+  <div class="profile-header-card">
+    <div class="user-avatar">
+      <img src="<%= (typeof profile !== 'undefined' && (profile.profile_photo || profile.avatar)) ? (profile.profile_photo || profile.avatar) : '/images/avatar.svg' %>" alt="Avatar">
+    </div>
+    <div>
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin: 0; color: var(--text-primary);"><%= profile.full_name || 'Customer Name' %></h2>
+      <span style="font-size: 0.85rem; color: var(--text-secondary);"><%= profile.phone || 'Customer Profile' %></span>
+    </div>
+  </div>
+  </div>
+
+  <div class="profile-menu-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+    
+    <a href="/customer/loans" class="profile-menu-item profile-menu-item2">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: #dee6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center;">
+          <i class="fa-solid fa-file-invoice"></i>
+        </div>
+        <span class="profile-list-color">My Loan</span>
+      </div>
+      <i class="fa-solid fa-chevron-right" style="color: var(--text-secondary); font-size: 0.85rem;"></i>
+    </a>
+
+    <a href="/customer/apply" class="profile-menu-item" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: #ffffff; border: 1px solid var(--surface-200); border-radius: 0.75rem; text-decoration: none; color: var(--text-primary); transition: background-color 0.2s;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center;">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <span class="profile-list-color">Apply new loan</span>
+      </div>
+      <i class="fa-solid fa-chevron-right" style="color: var(--text-secondary); font-size: 0.85rem;"></i>
+    </a>
+
+    <a href="/customer/support" class="profile-menu-item" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: #ffffff; border: 1px solid var(--surface-200); border-radius: 0.75rem; text-decoration: none; color: var(--text-primary); transition: background-color 0.2s;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: #ffedd5; color: #ea580c; display: flex; align-items: center; justify-content: center;">
+          <i class="fa-solid fa-headset"></i>
+        </div>
+        <span class="profile-list-color">Help & Support</span>
+      </div>
+      <i class="fa-solid fa-chevron-right" style="color: var(--text-secondary); font-size: 0.85rem;"></i>
+    </a>
+
+    <a href="/auth/logout" class="profile-menu-item" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: #ffffff; border: 1px solid var(--surface-200); border-radius: 0.75rem; text-decoration: none; color: #ef4444; transition: background-color 0.2s; margin-top: 1rem;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </div>
+        <span class="profile-list-color" style="color: var(--color-danger);">Logout</span>
+      </div>
+    </a>
+
+  </div>
+
+
+  <!-- ------------------------
+  ABOUT AMANAH CAPITAL
+  ------------------------- -->
+  <div class="row g-4 amana-user-details">
+    <div class="col-md-6" style="display: flex; flex-direction: column;">
+        <div class="p-3 bg-light rounded-3 border" style="display: flex; justify-content: flex-start; align-items: center;">
+              <img src="/brand-logo/AMANATH_CAPITAL_Logo-removebg-preview.png" alt="logo" style="height: 48px; width: 48px;">
+              <span class="fw-700 text-heading m-0" style="font-size: 1.1rem; color: var(--text-inverse); margin-left: 1rem;">Amanah Capital</span>
+          </div>
+          <div style="margin-top: 16px;">
+            <p> Empowering Communities Through Ethical Finance.</p>
+            <p style="margin-top: .75rem;">
+              <i class="fa-solid fa-phone"></i>
+              +91 80 4567 8900
+            </p>
+            <p style="margin-top: .75rem;">
+              <i class="fa-solid fa-envelope"></i>
+              support@amanahcapital.in
+            </p>
+            <p style="margin-top: .75rem;">
+              <i class="fa-solid fa-globe"></i>
+              www.amanahcapital.in
+            </p>
+            <p style="margin-top: .75rem;">
+              <i class="fa-solid fa-location-dot"></i>
+              Brigade Road, Bengaluru, Karnataka
+            </p>
+            <br>
+            <br>
+            <p>• © 2026 Amanah Capital  •  v1.0</p>
+          </div>
+      </div>
+    </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/customer/dashboard" class="nav-item">
+      <i class="fa-solid fa-building-columns"></i>
+      <span>Home</span>
+    </a>
+    <a href="/customer/loans" class="nav-item">
+      <i class="fa-solid fa-file-invoice"></i>
+      <span>Loan</span>
+    </a>
+    <a href="/customer/apply" class="nav-item">
+      <i class="fa-regular fa-calendar-check"></i>
+      <span>Apply</span>
+    </a>
+    <a href="/customer/profile" class="nav-item active">
+      <i class="fa-regular fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+    
+
+</div>

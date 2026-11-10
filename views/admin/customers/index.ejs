@@ -1,0 +1,224 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Customer Management</h1>
+    <p class="admin-page-desc">View, search, and manage frequency-based customer portfolios.</p>
+  </div>
+
+</div>
+
+<!-- Frequency Summary Cards -->
+<div class="grid grid-cols-1 md-grid-cols-3 gap-4 mb-4" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+  <!-- Daily -->
+  <div class="admin-widget text-center py-3">
+    <div class="text-sm fw-600 text-muted mb-1">DAILY</div>
+    <div class="text-2xl fw-bold text-heading"><%= summary.daily_loans_count %> Loans</div>
+    <div class="text-sm fw-500 text-primary mt-1"><%= formatINR(summary.daily_due_amount) %> Due</div>
+  </div>
+  <!-- Weekly -->
+  <div class="admin-widget text-center py-3">
+    <div class="text-sm fw-600 text-muted mb-1">WEEKLY</div>
+    <div class="text-2xl fw-bold text-heading"><%= summary.weekly_loans_count %> Loans</div>
+    <div class="text-sm fw-500 text-primary mt-1"><%= formatINR(summary.weekly_due_amount) %> Due</div>
+  </div>
+  <!-- Monthly -->
+  <div class="admin-widget text-center py-3">
+    <div class="text-sm fw-600 text-muted mb-1">MONTHLY</div>
+    <div class="text-2xl fw-bold text-heading"><%= summary.monthly_loans_count %> Loans</div>
+    <div class="text-sm fw-500 text-primary mt-1"><%= formatINR(summary.monthly_due_amount) %> Due</div>
+  </div>
+</div>
+
+<div class="admin-widget mb-4">
+  <form action="/admin/customers" method="GET" class="admin-table-toolbar">
+    <!-- Keep the selected frequency when searching -->
+    <input type="hidden" name="frequency" value="<%= currentFrequency %>">
+    
+    <div class="admin-search flex-1 position-relative">
+      <i class="fa fa-search"></i>
+      <input type="text" name="q" value="<%= locals.searchQuery || '' %>" placeholder="Search by name, phone, code or loan number..." class="admin-form-input w-100 pl-4">
+    </div>
+    <button type="submit" class="admin-btn admin-btn-secondary">Search</button>
+    <% if (locals.searchQuery) { %>
+      <a href="/admin/customers?frequency=<%= currentFrequency %>" class="admin-btn admin-btn-icon">Clear</a>
+    <% } %>
+  </form>
+  
+  <!-- Frequency Tabs & Export -->
+  <div class="admin-tabs mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex gap-2">
+      <a href="/admin/customers?frequency=ALL&q=<%= locals.searchQuery || '' %>" class="admin-btn <%= currentFrequency === 'ALL' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">ALL</a>
+      <a href="/admin/customers?frequency=DAILY&q=<%= locals.searchQuery || '' %>" class="admin-btn <%= currentFrequency === 'DAILY' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">DAILY</a>
+      <a href="/admin/customers?frequency=WEEKLY&q=<%= locals.searchQuery || '' %>" class="admin-btn <%= currentFrequency === 'WEEKLY' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">WEEKLY</a>
+      <a href="/admin/customers?frequency=MONTHLY&q=<%= locals.searchQuery || '' %>" class="admin-btn <%= currentFrequency === 'MONTHLY' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">MONTHLY</a>
+    </div>
+    
+    <% if (typeof hasPermission === 'function' && hasPermission('customers.export')) { %>
+      <div class="position-relative">
+        <button class="admin-btn admin-btn-secondary" type="button" id="exportDataToggle">
+          <i class="fa fa-download me-1"></i> Export Data <i class="fa fa-chevron-down ms-1" style="font-size: 0.75rem;"></i>
+        </button>
+        <div id="exportDataMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; width: 280px; background: white; border: 1px solid var(--admin-border); border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 1050; padding: 0.5rem 0;">
+          <a class="dropdown-item py-2 px-3 text-xs fw-600 d-flex align-items-center gap-2" href="/admin/customers/export/excel?frequency=<%= currentFrequency %>&q=<%= locals.searchQuery || '' %>" style="color: var(--admin-body-text); text-decoration: none;" onmouseover="this.style.background='var(--admin-bg)'" onmouseout="this.style.background='transparent'">
+            <i class="fa fa-file-excel text-success" style="width: 16px;"></i> Export Current Results — Excel
+          </a>
+          <a class="dropdown-item py-2 px-3 text-xs fw-600 d-flex align-items-center gap-2" href="/admin/customers/export/csv?frequency=<%= currentFrequency %>&q=<%= locals.searchQuery || '' %>" style="color: var(--admin-body-text); text-decoration: none;" onmouseover="this.style.background='var(--admin-bg)'" onmouseout="this.style.background='transparent'">
+            <i class="fa fa-file-csv text-primary" style="width: 16px;"></i> Export Current Results — CSV
+          </a>
+          <div style="height: 1px; background: var(--admin-border); margin: 0.5rem 0;"></div>
+          <a class="dropdown-item py-2 px-3 text-xs fw-600 d-flex align-items-center gap-2" href="/admin/customers/export/excel?frequency=ALL" style="color: var(--admin-body-text); text-decoration: none;" onmouseover="this.style.background='var(--admin-bg)'" onmouseout="this.style.background='transparent'">
+            <i class="fa fa-file-excel text-success" style="width: 16px;"></i> Export All Customers — Excel
+          </a>
+          <a class="dropdown-item py-2 px-3 text-xs fw-600 d-flex align-items-center gap-2" href="/admin/customers/export/csv?frequency=ALL" style="color: var(--admin-body-text); text-decoration: none;" onmouseover="this.style.background='var(--admin-bg)'" onmouseout="this.style.background='transparent'">
+            <i class="fa fa-file-csv text-primary" style="width: 16px;"></i> Export All Customers — CSV
+          </a>
+        </div>
+      </div>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const toggle = document.getElementById('exportDataToggle');
+          const menu = document.getElementById('exportDataMenu');
+          if (toggle && menu) {
+            toggle.addEventListener('click', (e) => {
+              e.stopPropagation();
+              menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+            document.addEventListener('click', () => {
+              menu.style.display = 'none';
+            });
+          }
+        });
+      </script>
+    <% } %>
+  </div>
+</div>
+
+<div class="admin-widget">
+  <div class="admin-widget-header">
+    <div class="admin-widget-title">
+      <i class="fa fa-users"></i>
+      Customers List
+    </div>
+  </div>
+  
+  <!-- Responsive Table Wrapper -->
+  <div class="table-responsive">
+    <table class="admin-table w-100">
+      <thead>
+        <tr>
+          <th>CUSTOMER</th>
+          <th>CONTACT</th>
+          <th>LOAN / SCHEME</th>
+          <th>FREQUENCY</th>
+          <th>PAYMENT DUE</th>
+          <th>OUTSTANDING</th>
+          <th>STATUS</th>
+          <th class="text-right">ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (customers && customers.length > 0) { %>
+          <% customers.forEach(c => { %>
+            <tr>
+              <td>
+                <div class="fw-500 text-heading"><%= c.customer_name %></div>
+                <div class="text-sm text-primary fw-600"><%= c.customer_code %></div>
+              </td>
+              <td>
+                <div class="text-body"><i class="fa fa-phone text-muted mr-1 text-xs"></i><%= c.customer_phone %></div>
+              </td>
+              <td>
+                <% if (c.loan_id) { %>
+                  <div class="fw-500 text-heading"><%= c.scheme_name || 'Legacy Scheme' %></div>
+                  <div class="text-sm text-muted"><%= c.loan_number %></div>
+                <% } else { %>
+                  <div class="text-sm text-muted">No Active Loan</div>
+                <% } %>
+              </td>
+              <td>
+                <% if (c.frequency) { %>
+                  <span class="admin-badge badge-primary"><%= c.frequency %></span>
+                <% } else { %>
+                  <span class="text-muted">-</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (c.loan_id && c.next_payment_amount) { %>
+                  <div class="fw-600 text-heading"><%= formatINR(c.next_payment_amount) %></div>
+                  <% 
+                     const dueDate = new Date(c.next_payment_date);
+                     const today = new Date();
+                     today.setHours(0,0,0,0);
+                     const isDueToday = dueDate.getTime() === today.getTime();
+                     const isOverdue = dueDate.getTime() < today.getTime();
+                  %>
+                  <div class="text-sm <%= isOverdue ? 'text-danger fw-600' : (isDueToday ? 'text-warning fw-600' : 'text-muted') %>">
+                    <%= isDueToday ? 'Due Today' : (isOverdue ? 'Overdue' : 'Due: ' + formatDate(c.next_payment_date)) %>
+                  </div>
+                <% } else { %>
+                  <span class="text-muted">-</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (c.loan_id) { %>
+                  <div class="fw-600 text-heading"><%= formatINR(c.outstanding_balance) %></div>
+                <% } else { %>
+                  <span class="text-muted">-</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="mb-1">
+                  <% if (c.derived_loan_status === 'ACTIVE') { %>
+                    <span class="admin-badge badge-success">ACTIVE</span>
+                  <% } else if (c.derived_loan_status === 'OVERDUE') { %>
+                    <span class="admin-badge badge-danger">OVERDUE</span>
+                  <% } else if (c.derived_loan_status === 'AWAITING DISBURSEMENT') { %>
+                    <span class="admin-badge badge-warning">AWAITING DISBURSEMENT</span>
+                  <% } else if (c.derived_loan_status === 'APPLICATION PENDING') { %>
+                    <span class="admin-badge badge-warning">APPLICATION PENDING</span>
+                  <% } else if (c.derived_loan_status === 'APPLICATION REJECTED') { %>
+                    <span class="admin-badge badge-secondary" style="background: #f8d7da; color: #721c24;">APPLICATION REJECTED</span>
+                  <% } else { %>
+                    <span class="admin-badge badge-secondary">NO ACTIVE LOAN</span>
+                  <% } %>
+                </div>
+              </td>
+              <td class="text-right">
+                <div class="d-flex gap-2 justify-content-end">
+                  <a href="/admin/customers/<%= c.customer_id %>" class="admin-btn admin-btn-secondary py-1 px-3" title="View Customer">
+                    View
+                  </a>
+                  
+                  <% if (c.derived_loan_status === 'ACTIVE' || c.derived_loan_status === 'OVERDUE') { %>
+                    <a href="/admin/repayments?loanId=<%= c.loan_id %>" class="admin-btn admin-btn-primary py-1 px-3" title="Receive Payment">
+                      Receive Payment
+                    </a>
+                  <% } else if (c.derived_loan_status === 'AWAITING DISBURSEMENT' || c.derived_loan_status === 'APPLICATION PENDING') { %>
+                    <a href="/admin/applications" class="admin-btn admin-btn-secondary py-1 px-3" title="View Applications">
+                      View Application
+                    </a>
+                  <% } else { %>
+                    <a href="/admin/customers/<%= c.customer_id %>/applications/new" class="admin-btn admin-btn-primary py-1 px-3" title="Create Loan Application">
+                      Create Loan
+                    </a>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="8" class="text-center text-muted py-5">
+              <div class="admin-empty-state">
+                <i class="fa fa-users"></i>
+                <div class="admin-empty-title">No customers found</div>
+                <div class="admin-empty-desc">There are no customers matching your filter (<%= currentFrequency %>) or search criteria.</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

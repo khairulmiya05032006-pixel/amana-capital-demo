@@ -1,0 +1,269 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap&v=2');
+
+:root {
+  /* Colors - Premium Fintech Palette */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-500: #3b82f6; /* Trust Blue */
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-900: #1e3a8a;
+
+  --secondary-50: #ecfdf5;
+  --secondary-500: #10b981; /* Emerald Green for success/money */
+  --secondary-600: #059669;
+
+  /* Admin Dashboard Design System Tokens */
+  --bg-primary: #0B1120;
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --bg-card-hover: rgba(255, 255, 255, 0.09);
+  --color-primary: #14B8A6; /* Teal */
+  --color-warning: #F59E0B; /* Amber */
+  --color-danger: #EF4444; /* Red */
+  --color-success: #22C55E; /* Green */
+  --color-text: #FFF;
+  --color-muted: #94A3B8;
+  --border-radius: 16px;
+  --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  --transition: 200ms ease;
+
+  /* Neutrals */
+  --surface-50: #f8fafc;
+  --surface-100: #f1f5f9;
+  --surface-200: #e2e8f0;
+  --surface-800: #1e293b;
+  --surface-900: #0f172a;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-inverse: #ffffff;
+  
+  /* System */
+  --error: #ef4444;
+  --success: #10b981;
+  --warning: #f59e0b;
+
+  /* Typography */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  /* Layout & Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Borders & Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-full: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.5); /* Blue glow */
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* XYZ Trust Auth Tokens */
+  --color-primary: #0D1B2A;
+  --color-accent: #E07B2A;
+  --color-bg: #F5F6FA;
+  --color-card: #FFFFFF;
+  --color-border: #E0E0E0;
+  --color-text-main: #0D1B2A;
+  --color-text-muted: #8A8A8A;
+  --font-family: 'Inter', sans-serif;
+  --border-radius-input: 8px;
+  --border-radius-button: 8px;
+}
+
+/* Dark Mode Variables */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-50: #0f172a;
+    --surface-100: #1e293b;
+    --surface-200: #334155;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+  }
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--surface-50);
+  color: var(--color-bg);
+  line-height: 1.5;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+a {
+  color: var(--primary-600);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-700);
+}
+
+/* Utility Classes */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass-panel {
+    background: var(--surface-900);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-family: var(--font-heading);
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+  color: var(--text-inverse);
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+  color: var(--text-inverse);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: var(--surface-200);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--surface-100);
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-secondary);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--surface-200);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-100);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  transition: all var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-input {
+    border-color: var(--surface-200);
+    background-color: var(--surface-100);
+  }
+}
+
+
+/* ============================================
+   CUSTOM GLOBAL SCROLLBAR (All Elements)
+   ============================================ */
+:root {
+  --sb-track-color: #f1f5f9;
+  --sb-thumb-color: #94a3b8;
+  --sb-size: 8px;
+}
+
+::-webkit-scrollbar {
+  width: var(--sb-size);
+  height: var(--sb-size);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 4px;
+  border: 1px solid var(--sb-track-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  * {
+      scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+      scrollbar-width: thin;
+  }
+}
+

@@ -1,0 +1,1231 @@
+<% layout('layouts/adminLayout') %>
+
+<% 
+  const safeTab = (typeof activeTab !== 'undefined' ? activeTab : 'general').toLowerCase();
+  const s = typeof adminSettings !== 'undefined' ? adminSettings : (typeof settings !== 'undefined' ? settings : {});
+  const sys = typeof systemInfo !== 'undefined' ? systemInfo : { appVersion: 'v1.0.0', dbVersion: 'MySQL 8.0', environment: 'production' };
+  const safeFormatDate = typeof formatDate === 'function' ? formatDate : (d) => d ? new Date(d).toLocaleString('en-IN') : 'N/A';
+%>
+
+<!-- Header -->
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Admin Settings & Configuration</h1>
+    <p class="admin-page-desc">Manage system preferences, administrator profile, security policies, and company information.</p>
+  </div>
+</div>
+
+<!-- Alerts -->
+<% if (typeof success !== 'undefined' && success) { %>
+  <div class="alert alert-success alert-dismissible fade show mb-4 rounded-3 shadow-sm border-0 d-flex align-items-center" role="alert" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46;">
+    <i class="fa fa-check-circle me-2 text-success fa-lg"></i>
+    <span class="fw-600"><%= success %></span>
+    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="alert alert-danger alert-dismissible fade show mb-4 rounded-3 shadow-sm border-0 d-flex align-items-center" role="alert" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B;">
+    <i class="fa fa-exclamation-circle me-2 text-danger fa-lg"></i>
+    <span class="fw-600"><%= error %></span>
+    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<!-- Two Column Settings Layout -->
+<div class="row g-4 align-items-start mb-4">
+  
+  <!-- Left Navigation Column (Settings Sidebar Tabs) -->
+  <div class="col-md-3">
+    <div class="admin-widget p-3" style="background-color: var(--admin-sidebar-bg);">
+      <div class="text-xs text-muted fw-700 text-uppercase tracking-wider px-3 mb-2">SETTINGS MENU</div>
+      
+      <div class="nav flex-column nav-pills gap-1">
+        <a href="/admin/settings?tab=general" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'general' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-sliders-h me-2" style="width: 18px;"></i> General
+        </a>
+
+        <a href="/admin/settings?tab=profile" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'profile' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-user me-2" style="width: 18px;"></i> My Profile
+        </a>
+
+        <% if (locals.user && (locals.user.role === 'SUPER_ADMIN' || locals.user.role === 'ADMIN')) { %>
+        <a href="/admin/settings?tab=security" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'security' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-shield-alt me-2" style="width: 18px;"></i> Security
+        </a>
+        <% } %>
+
+        <a href="/admin/settings?tab=company" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'company' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-building me-2" style="width: 18px;"></i> Company Info
+        </a>
+
+        <a href="/admin/settings?tab=notifications" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'notifications' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-bell me-2" style="width: 18px;"></i> Notifications
+        </a>
+
+        <a href="/admin/settings?tab=appearance" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'appearance' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-palette me-2" style="width: 18px;"></i> Appearance
+        </a>
+
+        <a href="/admin/settings?tab=penalty" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'penalty' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-exclamation-circle me-2" style="width: 18px;"></i> Penalty Settings
+        </a>
+
+        <a href="/admin/settings?tab=administration" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= (safeTab === 'administrators' || safeTab === 'administration') ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-users-cog me-2" style="width: 18px;"></i> Administration Management
+        </a>
+
+        <a href="/admin/settings?tab=system" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'system' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-cogs me-2" style="width: 18px;"></i> System Preferences
+        </a>
+
+        <a href="/admin/settings?tab=activity-logs" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'activity-logs' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-list-alt me-2" style="width: 18px;"></i> Activity Logs
+        </a>
+
+        <a href="/admin/settings?tab=about" class="admin-nav-item py-2 px-3 text-xs fw-600 rounded <%= safeTab === 'about' ? 'active' : '' %>" style="margin-bottom: 2px;">
+          <i class="fa fa-info-circle me-2" style="width: 18px;"></i> About
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Content Column (Active Settings Tab Panel) -->
+  <div class="col-md-9">
+    <div class="admin-widget">
+
+      <!-- ==========================================
+           TAB 1: GENERAL SETTINGS
+           ========================================== -->
+      <% if (safeTab === 'general') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-sliders-h text-primary"></i> General Settings</h3>
+          <span class="text-xs text-muted">Application localization and system preferences</span>
+        </div>
+
+        <form action="/admin/settings" method="POST">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <input type="hidden" name="section" value="general">
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="admin-form-label">Time Zone</label>
+              <select name="time_zone" class="admin-form-select">
+                <option value="Asia/Kolkata" <%= s.time_zone === 'Asia/Kolkata' ? 'selected' : '' %>>Asia/Kolkata (IST - UTC+5:30)</option>
+                <option value="UTC" <%= s.time_zone === 'UTC' ? 'selected' : '' %>>Coordinated Universal Time (UTC)</option>
+                <option value="America/New_York" <%= s.time_zone === 'America/New_York' ? 'selected' : '' %>>America/New_York (EST)</option>
+                <option value="Europe/London" <%= s.time_zone === 'Europe/London' ? 'selected' : '' %>>Europe/London (GMT)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Date Format</label>
+              <select name="date_format" class="admin-form-select">
+                <option value="DD/MM/YYYY" <%= s.date_format === 'DD/MM/YYYY' ? 'selected' : '' %>>DD/MM/YYYY (e.g. 24/07/2026)</option>
+                <option value="YYYY-MM-DD" <%= s.date_format === 'YYYY-MM-DD' ? 'selected' : '' %>>YYYY-MM-DD (e.g. 2026-07-24)</option>
+                <option value="MM/DD/YYYY" <%= s.date_format === 'MM/DD/YYYY' ? 'selected' : '' %>>MM/DD/YYYY (e.g. 07/24/2026)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Default Currency</label>
+              <select name="currency" class="admin-form-select">
+                <option value="INR (₹)" <%= s.currency === 'INR (₹)' ? 'selected' : '' %>>Indian Rupee (INR - ₹)</option>
+                <option value="USD ($)" <%= s.currency === 'USD ($)' ? 'selected' : '' %>>US Dollar (USD - $)</option>
+                <option value="EUR (€)" <%= s.currency === 'EUR (€)' ? 'selected' : '' %>>Euro (EUR - €)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Language</label>
+              <select name="language" class="admin-form-select">
+                <option value="English (US)" <%= s.language === 'English (US)' ? 'selected' : '' %>>English (US)</option>
+                <option value="Hindi" <%= s.language === 'Hindi' ? 'selected' : '' %>>Hindi (हिन्दी)</option>
+                <option value="Marathi" <%= s.language === 'Marathi' ? 'selected' : '' %>>Marathi (मराठी)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="reset" class="admin-btn admin-btn-secondary">Reset</button>
+            <button type="submit" class="admin-btn admin-btn-primary"><i class="fa fa-save me-1"></i> Save Changes</button>
+          </div>
+        </form>
+
+      <!-- ==========================================
+           TAB 2: MY PROFILE
+           ========================================== -->
+      <% } else if (safeTab === 'profile') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-user text-primary"></i> Administrator Profile</h3>
+          <span class="text-xs text-muted">Update personal contact info and designation</span>
+        </div>
+
+        <form action="/admin/settings" method="POST">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <input type="hidden" name="section" value="profile">
+
+          <div class="d-flex align-items-center gap-4 mb-4 pb-3 border-bottom">
+            <div class="admin-avatar-lg m-0" style="width: 72px; height: 72px; font-size: 1.8rem;">
+              <i class="fa fa-user-shield"></i>
+            </div>
+            <div>
+              <h4 class="fw-700 text-heading m-0" style="font-size: 1.1rem;"><%= s.full_name || 'Admin User' %></h4>
+              <p class="text-xs text-muted m-0"><%= s.designation || 'Administrator' %></p>
+              <div class="mt-2">
+                <button type="button" class="admin-btn admin-btn-secondary text-xs py-1 px-2" onclick="alert('Profile photo upload is enabled.');">
+                  <i class="fa fa-upload me-1"></i> Change Photo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="admin-form-label">Full Name</label>
+              <input type="text" name="full_name" class="admin-form-input" value="<%= s.full_name || 'Admin User' %>" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Email Address</label>
+              <input type="email" name="email" class="admin-form-input" value="<%= s.email || 'admin@microfinance.com' %>" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Mobile Number</label>
+              <input type="text" name="mobile_number" class="admin-form-input" value="<%= s.mobile_number || '+91 9876543210' %>">
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Designation / Role Title</label>
+              <input type="text" name="designation" class="admin-form-input" value="<%= s.designation || 'Senior Treasury Administrator' %>">
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="submit" class="admin-btn admin-btn-primary"><i class="fa fa-save me-1"></i> Update Profile</button>
+          </div>
+        </form>
+
+      <!-- ==========================================
+           TAB 3: SECURITY
+           ========================================== -->
+      <% } else if (safeTab === 'security') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-shield-alt text-primary"></i> Security & Authentication</h3>
+          <span class="text-xs text-muted">Password change, 2FA, and active session monitoring</span>
+        </div>
+
+        <!-- Password Change Form -->
+        <form action="/admin/settings" method="POST" class="mb-5">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <input type="hidden" name="section" value="security">
+          
+          <h4 class="fw-700 text-sm text-heading mb-3"><i class="fa fa-key text-primary me-1"></i> Change Password</h4>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="admin-form-label">Current Password <span class="text-danger">*</span></label>
+              <input type="password" name="current_password" class="admin-form-input" placeholder="••••••••" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="admin-form-label">New Password <span class="text-danger">*</span></label>
+              <input type="password" name="new_password" class="admin-form-input" placeholder="At least 6 characters" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="admin-form-label">Confirm New Password <span class="text-danger">*</span></label>
+              <input type="password" name="confirm_password" class="admin-form-input" placeholder="Repeat new password" required>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end border-bottom pb-4">
+            <button type="submit" class="admin-btn admin-btn-primary"><i class="fa fa-lock me-1"></i> Update Password</button>
+          </div>
+        </form>
+
+        <!-- Security Features Grid -->
+        <div class="row g-4">
+          <!-- 2FA Box -->
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-700 text-sm text-heading">Two-Factor Authentication (2FA)</span>
+                <span class="admin-badge badge-secondary">FUTURE READY</span>
+              </div>
+              <p class="text-xs text-muted mb-3">Add an extra layer of security using Time-based One-Time Passwords (TOTP).</p>
+              <button type="button" class="admin-btn admin-btn-secondary text-xs" onclick="alert('Two-Factor Authentication configuration will be available in future release.');">
+                Configure 2FA
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Sessions Box -->
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-700 text-sm text-heading">Active Login Sessions</span>
+                <span class="admin-badge badge-success"><i class="fa fa-circle text-xs me-1"></i> 1 Active</span>
+              </div>
+              <p class="text-xs text-muted mb-1">Current Session: <span class="fw-600 text-heading">Chrome / Windows OS</span></p>
+              <p class="text-xs text-muted mb-3">IP Address: <span class="fw-600 text-primary">127.0.0.1 (LocalHost)</span></p>
+            </div>
+          </div>
+        </div>
+
+      <!-- ==========================================
+           TAB 4: COMPANY INFORMATION
+           ========================================== -->
+      <% } else if (safeTab === 'company') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-building text-primary"></i> Company & Corporate Information</h3>
+          <span class="text-xs text-muted">Legal registration details and official address</span>
+        </div>
+
+        <form action="/admin/settings" method="POST">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <input type="hidden" name="section" value="company">
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="admin-form-label">Company Legal Name</label>
+              <input type="text" name="company_name" class="admin-form-input" value="<%= s.company_name || 'Amanah Capital Microfinance Ltd.' %>" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Registration Number (CIN)</label>
+              <input type="text" name="registration_number" class="admin-form-input" value="<%= s.registration_number || 'U65923MH2021PLC356123' %>">
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">GST Number</label>
+              <input type="text" name="gst_number" class="admin-form-input" value="<%= s.gst_number || '27AABCA1234F1ZB' %>">
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">PAN Number</label>
+              <input type="text" name="pan_number" class="admin-form-input" value="<%= s.pan_number || 'AABCA1234F' %>">
+            </div>
+
+            <div class="col-md-12">
+              <label class="admin-form-label">Registered Office Address</label>
+              <input type="text" name="address" class="admin-form-input" value="<%= s.address || 'Suite 402, Financial District, Bandra Kurla Complex' %>">
+            </div>
+
+            <div class="col-md-3">
+              <label class="admin-form-label">City</label>
+              <input type="text" name="city" class="admin-form-input" value="<%= s.city || 'Mumbai' %>">
+            </div>
+
+            <div class="col-md-3">
+              <label class="admin-form-label">State</label>
+              <input type="text" name="state" class="admin-form-input" value="<%= s.state || 'Maharashtra' %>">
+            </div>
+
+            <div class="col-md-3">
+              <label class="admin-form-label">Country</label>
+              <input type="text" name="country" class="admin-form-input" value="<%= s.country || 'India' %>">
+            </div>
+
+            <div class="col-md-3">
+              <label class="admin-form-label">Postal Code</label>
+              <input type="text" name="postal_code" class="admin-form-input" value="<%= s.postal_code || '400051' %>">
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="submit" class="admin-btn admin-btn-primary"><i class="fa fa-save me-1"></i> Save Company Details</button>
+          </div>
+        </form>
+
+      <!-- ==========================================
+           TAB 5: NOTIFICATIONS
+           ========================================== -->
+      <% } else if (safeTab === 'notifications') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-bell text-primary"></i> Notification Preferences</h3>
+          <span class="text-xs text-muted">Configure automated alerts and summary reports</span>
+        </div>
+
+        <form action="/admin/settings" method="POST">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <input type="hidden" name="section" value="notifications">
+
+          <div class="row g-3 mb-4">
+            
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-600 text-sm text-heading">Email Notifications</div>
+                  <div class="text-xs text-muted">Receive system alerts via admin email</div>
+                </div>
+                <select name="email_notifications" class="admin-form-select" style="width: 120px;">
+                  <option value="ENABLED" <%= s.email_notifications === 'ENABLED' ? 'selected' : '' %>>Enabled</option>
+                  <option value="DISABLED" <%= s.email_notifications === 'DISABLED' ? 'selected' : '' %>>Disabled</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-600 text-sm text-heading">SMS Alerts</div>
+                  <div class="text-xs text-muted">Send SMS notifications for critical transactions</div>
+                </div>
+                <select name="sms_notifications" class="admin-form-select" style="width: 120px;">
+                  <option value="ENABLED" <%= s.sms_notifications === 'ENABLED' ? 'selected' : '' %>>Enabled</option>
+                  <option value="DISABLED" <%= s.sms_notifications === 'DISABLED' ? 'selected' : '' %>>Disabled</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-600 text-sm text-heading">Payment Alerts</div>
+                  <div class="text-xs text-muted">Instant alert when customer payment is recorded</div>
+                </div>
+                <select name="payment_alerts" class="admin-form-select" style="width: 120px;">
+                  <option value="ENABLED" <%= s.payment_alerts === 'ENABLED' ? 'selected' : '' %>>Enabled</option>
+                  <option value="DISABLED" <%= s.payment_alerts === 'DISABLED' ? 'selected' : '' %>>Disabled</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-600 text-sm text-heading">Daily Summary Report</div>
+                  <div class="text-xs text-muted">Receive daily executive collection digest</div>
+                </div>
+                <select name="daily_summary" class="admin-form-select" style="width: 120px;">
+                  <option value="ENABLED" <%= s.daily_summary === 'ENABLED' ? 'selected' : '' %>>Enabled</option>
+                  <option value="DISABLED" <%= s.daily_summary === 'DISABLED' ? 'selected' : '' %>>Disabled</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="submit" class="admin-btn admin-btn-primary"><i class="fa fa-save me-1"></i> Save Notification Preferences</button>
+          </div>
+        </form>
+
+      <!-- ==========================================
+           TAB 6: APPEARANCE
+           ========================================== -->
+      <% } else if (safeTab === 'appearance') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-palette text-primary"></i> Appearance & UI Preferences</h3>
+          <span class="text-xs text-muted">Customize admin dashboard layout and table density</span>
+        </div>
+
+        <form action="/admin/settings" method="POST">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <input type="hidden" name="section" value="appearance">
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="admin-form-label">Default Landing Page</label>
+              <select name="default_landing_page" class="admin-form-select">
+                <option value="/admin/dashboard" <%= s.default_landing_page === '/admin/dashboard' ? 'selected' : '' %>>Admin Dashboard</option>
+                <option value="/admin/repayments" <%= s.default_landing_page === '/admin/repayments' ? 'selected' : '' %>>Repayments Workspace</option>
+                <option value="/admin/customers" <%= s.default_landing_page === '/admin/customers' ? 'selected' : '' %>>Customer Directory</option>
+                <option value="/admin/loans" <%= s.default_landing_page === '/admin/loans' ? 'selected' : '' %>>Loans & Disbursal</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Table Row Density</label>
+              <select name="table_density" class="admin-form-select">
+                <option value="Comfortable" <%= s.table_density === 'Comfortable' ? 'selected' : '' %>>Comfortable (Standard padding)</option>
+                <option value="Compact" <%= s.table_density === 'Compact' ? 'selected' : '' %>>Compact (Reduced padding)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Fixed Sidebar Navigation</label>
+              <select name="fixed_sidebar" class="admin-form-select">
+                <option value="ENABLED" <%= s.fixed_sidebar === 'ENABLED' ? 'selected' : '' %>>Enabled (Fixed)</option>
+                <option value="DISABLED" <%= s.fixed_sidebar === 'DISABLED' ? 'selected' : '' %>>Disabled (Scrollable)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Fixed Topbar Header</label>
+              <select name="fixed_header" class="admin-form-select">
+                <option value="ENABLED" <%= s.fixed_header === 'ENABLED' ? 'selected' : '' %>>Enabled (Sticky)</option>
+                <option value="DISABLED" <%= s.fixed_header === 'DISABLED' ? 'selected' : '' %>>Disabled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="submit" class="admin-btn admin-btn-primary"><i class="fa fa-save me-1"></i> Save Appearance</button>
+          </div>
+        </form>
+
+      <!-- ==========================================
+           TAB 7: SYSTEM PREFERENCES
+           ========================================== -->
+      <% } else if (safeTab === 'system') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-cogs text-primary"></i> System Preferences</h3>
+          <span class="text-xs text-muted">Application-wide session timeouts, page sizes, and backups</span>
+        </div>
+
+        <form action="/admin/settings" method="POST">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <input type="hidden" name="section" value="system">
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="admin-form-label">Inactivity Session Timeout</label>
+              <select name="session_timeout" class="admin-form-select">
+                <option value="15 Minutes" <%= s.session_timeout === '15 Minutes' ? 'selected' : '' %>>15 Minutes</option>
+                <option value="30 Minutes" <%= s.session_timeout === '30 Minutes' ? 'selected' : '' %>>30 Minutes</option>
+                <option value="60 Minutes" <%= s.session_timeout === '60 Minutes' ? 'selected' : '' %>>60 Minutes</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Auto Logout on Inactivity</label>
+              <select name="auto_logout" class="admin-form-select">
+                <option value="ENABLED" <%= s.auto_logout === 'ENABLED' ? 'selected' : '' %>>Enabled</option>
+                <option value="DISABLED" <%= s.auto_logout === 'DISABLED' ? 'selected' : '' %>>Disabled</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Default Table Page Size</label>
+              <select name="default_page_size" class="admin-form-select">
+                <option value="10 Rows" <%= s.default_page_size === '10 Rows' ? 'selected' : '' %>>10 Rows</option>
+                <option value="25 Rows" <%= s.default_page_size === '25 Rows' ? 'selected' : '' %>>25 Rows</option>
+                <option value="50 Rows" <%= s.default_page_size === '50 Rows' ? 'selected' : '' %>>50 Rows</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Automated Database Backup Frequency</label>
+              <select name="backup_frequency" class="admin-form-select">
+                <option value="Daily" <%= s.backup_frequency === 'Daily' ? 'selected' : '' %>>Daily</option>
+                <option value="Weekly" <%= s.backup_frequency === 'Weekly' ? 'selected' : '' %>>Weekly</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="submit" class="admin-btn admin-btn-primary"><i class="fa fa-save me-1"></i> Save System Preferences</button>
+          </div>
+        </form>
+
+      <!-- ==========================================
+           TAB 11: PENALTY SETTINGS
+           ========================================== -->
+      <% } else if (safeTab === 'penalty') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-exclamation-circle text-primary"></i> Penalty & Late Fee Settings</h3>
+          <span class="text-xs text-muted">Configure overdue loan penalty rules by repayment frequency.</span>
+        </div>
+
+        <form action="/admin/settings/penalties" method="POST">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+          <div class="row g-4 mb-4">
+            <% ['DAILY', 'WEEKLY', 'MONTHLY'].forEach(freq => { 
+                const p = penaltySettings && penaltySettings[freq] ? penaltySettings[freq] : {};
+                const freqColor = freq === 'DAILY' ? 'primary' : freq === 'WEEKLY' ? 'warning' : 'success';
+                const isFixed = p.calculation_method === 'FIXED_AMOUNT';
+            %>
+            <div class="col-lg-4 mb-3">
+              <div class="admin-card h-100 shadow-sm" style="border: 1px solid #E2E8F0; border-radius: 1rem; background: #FFFFFF; overflow: hidden; border-top: 4px solid var(--bs-<%= freqColor %>) !important;">
+                <div class="admin-card-header py-3 px-3 border-bottom d-flex align-items-center justify-content-between" style="background: #F8FAFC;">
+                  <h5 class="m-0 text-<%= freqColor %> fw-bold" style="font-size: 1rem;">
+                    <i class="fa fa-calendar-<%= freq === 'DAILY' ? 'day' : freq === 'WEEKLY' ? 'week' : 'alt' %> me-2"></i><%= freq %>
+                  </h5>
+                  <span class="badge bg-light text-dark border text-xs" id="badge_mode_<%= freq %>"><%= isFixed ? 'Fixed Amount' : 'Percentage Rate' %></span>
+                </div>
+                <div class="admin-card-body p-3">
+                  <div class="mb-3">
+                    <label class="admin-form-label text-xs fw-bold text-dark">Calculation Method</label>
+                    <select name="<%= freq %>[calculation_method]" id="calc_method_<%= freq %>" class="admin-form-select form-select-sm fw-600" onchange="syncPenaltyMethodUI('<%= freq %>')">
+                      <option value="PERCENTAGE_OF_OVERDUE" <%= !isFixed ? 'selected' : '' %>>Percentage (%)</option>
+                      <option value="FIXED_AMOUNT" <%= isFixed ? 'selected' : '' %>>Fixed Amount (₹)</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Percentage Rate Box -->
+                  <div class="mb-3 p-2 rounded-2" id="penalty_rate_grp_<%= freq %>" style="transition: all 0.2s ease;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <label class="admin-form-label text-xs fw-bold m-0 text-dark">Penalty Rate (%)</label>
+                      <span class="badge bg-primary text-white text-xxs" id="badge_rate_<%= freq %>">Active</span>
+                    </div>
+                    <div class="input-group input-group-sm">
+                      <input type="number" step="0.01" min="0" max="100" name="<%= freq %>[penalty_rate]" id="input_rate_<%= freq %>" class="form-control form-control-sm fw-bold" value="<%= p.penalty_rate || '0.00' %>">
+                      <span class="input-group-text bg-light text-muted fw-bold">%</span>
+                    </div>
+                    <div class="text-xs text-muted mt-1" style="font-size: 0.7rem;">Charged as % of eligible overdue installment.</div>
+                  </div>
+
+                  <!-- Fixed Amount Box -->
+                  <div class="mb-3 p-2 rounded-2" id="penalty_fixed_grp_<%= freq %>" style="transition: all 0.2s ease;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <label class="admin-form-label text-xs fw-bold m-0 text-dark">Fixed Amount (₹)</label>
+                      <span class="badge bg-success text-white text-xxs" id="badge_fixed_<%= freq %>">Active</span>
+                    </div>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text bg-light text-muted fw-bold">₹</span>
+                      <input type="number" step="0.01" min="0" name="<%= freq %>[fixed_penalty_amount]" id="input_fixed_<%= freq %>" class="form-control form-control-sm fw-bold" value="<%= p.fixed_penalty_amount || '0.00' %>">
+                    </div>
+                    <div class="text-xs text-muted mt-1" style="font-size: 0.7rem;">Fixed rupee late fee added per overdue installment.</div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="admin-form-label text-xs fw-bold text-dark">Grace Period (Days)</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" min="0" max="90" name="<%= freq %>[grace_period_days]" class="form-control form-control-sm" value="<%= p.grace_period_days || '0' %>">
+                      <span class="input-group-text bg-light text-muted text-xs">Days</span>
+                    </div>
+                    <div class="text-xs text-muted mt-1" style="font-size: 0.7rem;">Days past due date before penalties are applied.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="admin-form-label text-xs fw-bold text-dark">Auto Apply</label>
+                    <select name="<%= freq %>[auto_apply]" class="admin-form-select form-select-sm">
+                      <option value="ENABLED" <%= p.auto_apply === 1 || p.auto_apply === true ? 'selected' : '' %>>Enabled (Automated overnight)</option>
+                      <option value="DISABLED" <%= p.auto_apply === 0 || p.auto_apply === false ? 'selected' : '' %>>Disabled (Manual approval)</option>
+                    </select>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="admin-form-label text-xs fw-bold text-dark">Max Penalty Cap (%)</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" step="0.01" min="0" max="100" name="<%= freq %>[maximum_penalty_cap]" class="form-control form-control-sm" value="<%= p.maximum_penalty_cap || '15.00' %>">
+                      <span class="input-group-text bg-light text-muted fw-bold">%</span>
+                    </div>
+                    <div class="text-xs text-muted mt-1" style="font-size: 0.7rem;">Cumulative cap relative to loan principal.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+          
+          <div class="alert alert-info d-flex align-items-center mb-4 rounded-3" style="background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF;">
+            <i class="fa fa-info-circle fa-2x me-3 text-primary"></i>
+            <div style="font-size: 0.85rem; color: #1E3A8A;">
+              <strong>Active Policy Synchronization:</strong><br>
+              Updating penalty rules updates default settings for future disbursements and automatically synchronizes eligible overdue installments under the active policy version.
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="submit" class="admin-btn admin-btn-primary px-4"><i class="fa fa-save me-1"></i> Save Penalty Settings</button>
+          </div>
+        </form>
+
+        <script>
+          function syncPenaltyMethodUI(freq) {
+            const select = document.getElementById('calc_method_' + freq);
+            const rateGrp = document.getElementById('penalty_rate_grp_' + freq);
+            const fixedGrp = document.getElementById('penalty_fixed_grp_' + freq);
+            const rateBadge = document.getElementById('badge_rate_' + freq);
+            const fixedBadge = document.getElementById('badge_fixed_' + freq);
+            const modeBadge = document.getElementById('badge_mode_' + freq);
+
+            if (!select || !rateGrp || !fixedGrp) return;
+
+            const isFixed = select.value === 'FIXED_AMOUNT';
+
+            if (isFixed) {
+              // Highlight Fixed
+              fixedGrp.style.background = '#ECFDF5';
+              fixedGrp.style.border = '1px solid #A7F3D0';
+              fixedGrp.style.opacity = '1';
+              if (fixedBadge) fixedBadge.style.display = 'inline-block';
+
+              // Dim Rate
+              rateGrp.style.background = '#F8FAFC';
+              rateGrp.style.border = '1px dashed #CBD5E1';
+              rateGrp.style.opacity = '0.55';
+              if (rateBadge) rateBadge.style.display = 'none';
+
+              if (modeBadge) {
+                modeBadge.textContent = 'Fixed Amount (₹)';
+                modeBadge.className = 'badge bg-success-subtle text-success border border-success-subtle text-xs';
+              }
+            } else {
+              // Highlight Rate
+              rateGrp.style.background = '#EFF6FF';
+              rateGrp.style.border = '1px solid #BFDBFE';
+              rateGrp.style.opacity = '1';
+              if (rateBadge) rateBadge.style.display = 'inline-block';
+
+              // Dim Fixed
+              fixedGrp.style.background = '#F8FAFC';
+              fixedGrp.style.border = '1px dashed #CBD5E1';
+              fixedGrp.style.opacity = '0.55';
+              if (fixedBadge) fixedBadge.style.display = 'none';
+
+              if (modeBadge) {
+                modeBadge.textContent = 'Percentage (%)';
+                modeBadge.className = 'badge bg-primary-subtle text-primary border border-primary-subtle text-xs';
+              }
+            }
+          }
+
+          document.addEventListener('DOMContentLoaded', function() {
+            ['DAILY', 'WEEKLY', 'MONTHLY'].forEach(function(freq) {
+              syncPenaltyMethodUI(freq);
+            });
+          });
+        </script>
+
+
+      <!-- ==========================================
+           TAB 8: ACTIVITY LOGS
+           ========================================== -->
+      <% } else if (safeTab === 'activity-logs') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom flex-wrap gap-2 justify-content-between">
+          <div>
+            <h3 class="admin-widget-title m-0"><i class="fa fa-list-alt text-primary"></i> Administrator Activity Audit Logs</h3>
+            <span class="text-xs text-muted">Complete audit trail of system actions, settings changes, and fund deposits</span>
+          </div>
+
+          <div class="d-flex gap-2">
+            <a href="/admin/settings/activity-logs/export" class="admin-btn admin-btn-secondary text-xs">
+              <i class="fa fa-file-csv me-1 text-success"></i> Export CSV
+            </a>
+          </div>
+        </div>
+
+        <form action="/admin/settings" method="GET" class="mb-3">
+          <input type="hidden" name="tab" value="activity-logs">
+          <div class="admin-search" style="max-width: 400px;">
+            <i class="fa fa-search"></i>
+            <input type="text" name="search" placeholder="Search logs by action, module, or user..." value="<%= search || '' %>" style="width: 100%;">
+          </div>
+        </form>
+
+        <div class="table-responsive">
+          <table class="admin-table w-100">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Module</th>
+                <th>Description</th>
+                <th>IP Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (activityLogs && activityLogs.length > 0) { %>
+                <% activityLogs.forEach(log => { %>
+                  <tr>
+                    <td class="text-xs text-body"><%= safeFormatDate(log.created_at) %></td>
+                    <td class="fw-600 text-xs text-heading"><%= log.user_email || ('User #' + log.user_id) %></td>
+                    <td>
+                      <span class="admin-badge badge-info text-xs"><%= log.action %></span>
+                    </td>
+                    <td class="fw-600 text-xs text-primary"><%= log.module_name || 'SYSTEM' %></td>
+                    <td class="text-xs text-body"><%= log.description || log.action %></td>
+                    <td class="text-xs text-muted font-monospace"><%= log.ip_address || '127.0.0.1' %></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-xs text-muted">No activity logs found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+      <!-- ==========================================
+           TAB 9: ABOUT
+           ========================================== -->
+      <% } else if (safeTab === 'about') { %>
+        <div class="admin-widget-header pb-3 mb-4 border-bottom">
+          <h3 class="admin-widget-title m-0"><i class="fa fa-info-circle text-primary"></i> About Amanah Capital Platform</h3>
+          <span class="text-xs text-muted">Enterprise microfinance core system specifications</span>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <img src="/brand-logo/AMANATH_CAPITAL_Logo-removebg-preview.png" alt="logo" style="height: 48px; width: 48px;">
+                <div>
+                  <h4 class="fw-700 text-heading m-0" style="font-size: 1.1rem;">Amanah Capital Core v1.0</h4>
+                  <span class="text-xs text-muted">Production Build #<%= sys.buildNumber || '20260724.01' %></span>
+                </div>
+              </div>
+              <p class="text-xs text-body mb-0">Enterprise-grade Microfinance Loan Management & Treasury Platform engineered with Node.js, Express, MySQL, and Role-Based Security controls.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border">
+              <h4 class="fw-700 text-sm text-heading mb-3">System Environment & License</h4>
+              <div class="d-grid gap-2 text-xs">
+                <div class="d-flex justify-content-between border-bottom pb-1">
+                  <span class="text-muted">Application Version:</span>
+                  <span class="fw-700 text-primary"><%= sys.appVersion %></span>
+                </div>
+                <div class="d-flex justify-content-between border-bottom pb-1">
+                  <span class="text-muted">Database Server:</span>
+                  <span class="fw-600 text-heading"><%= sys.dbVersion %></span>
+                </div>
+                <div class="d-flex justify-content-between border-bottom pb-1">
+                  <span class="text-muted">Environment:</span>
+                  <span class="admin-badge badge-success"><%= sys.environment.toUpperCase() %></span>
+                </div>
+                <div class="d-flex justify-content-between border-bottom pb-1">
+                  <span class="text-muted">License Type:</span>
+                  <span class="fw-600 text-heading"><%= sys.license %></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted">Support Contact:</span>
+                  <span class="fw-600 text-primary"><%= sys.supportContact %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <!-- ==========================================
+           TAB 10: ADMINISTRATOR MANAGEMENT
+           ========================================== -->
+      <% } else if (safeTab === 'administrators' || safeTab === 'administration') { %>
+        <%
+          const adminList = adminData && adminData.administrators ? adminData.administrators : [];
+          const aStats = adminData && adminData.stats ? adminData.stats : { totalAdmins: 0, activeAdmins: 0, disabledAdmins: 0, lastAddedDate: null };
+        %>
+        
+        <div class="admin-widget-header pb-3 mb-4 border-bottom flex-wrap gap-2 justify-content-between">
+          <div>
+            <h3 class="admin-widget-title m-0"><i class="fa fa-users-cog text-primary"></i> Administration Management</h3>
+            <span class="text-xs text-muted">Create sub-admins, manage staff roles, and configure granular module permissions.</span>
+          </div>
+
+          <button 
+            type="button" 
+            class="admin-btn admin-btn-primary py-2 px-3 fw-700" 
+            data-bs-toggle="modal"
+            data-bs-target="#addAdminModal"
+            onclick="openAddAdminModal()"
+          >
+            <i class="fa fa-user-plus me-1"></i> + Add Administrator
+          </button>
+        </div>
+
+        <!-- Summary Cards Grid -->
+        <div class="admin-kpi-grid mb-4">
+          <div class="admin-kpi-card">
+            <div class="admin-kpi-icon-wrap icon-blue">
+              <i class="fa fa-users-cog"></i>
+            </div>
+            <div class="admin-kpi-details">
+              <span class="admin-kpi-label">Total Administrators</span>
+              <span class="admin-kpi-value"><%= aStats.totalAdmins %></span>
+            </div>
+          </div>
+
+          <div class="admin-kpi-card">
+            <div class="admin-kpi-icon-wrap icon-green">
+              <i class="fa fa-user-check"></i>
+            </div>
+            <div class="admin-kpi-details">
+              <span class="admin-kpi-label">Active Accounts</span>
+              <span class="admin-kpi-value"><%= aStats.activeAdmins %></span>
+            </div>
+          </div>
+
+          <div class="admin-kpi-card">
+            <div class="admin-kpi-icon-wrap icon-red">
+              <i class="fa fa-user-slash"></i>
+            </div>
+            <div class="admin-kpi-details">
+              <span class="admin-kpi-label">Disabled Accounts</span>
+              <span class="admin-kpi-value"><%= aStats.disabledAdmins %></span>
+            </div>
+          </div>
+
+          <div class="admin-kpi-card">
+            <div class="admin-kpi-icon-wrap icon-purple">
+              <i class="fa fa-user-clock"></i>
+            </div>
+            <div class="admin-kpi-details">
+              <span class="admin-kpi-label">Last Admin Added</span>
+              <span class="admin-kpi-value"><%= safeFormatDate(aStats.lastAddedDate) %></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Administrators Directory Table -->
+        <div class="table-responsive">
+          <table class="admin-table w-100">
+            <thead>
+              <tr>
+                <th>Profile</th>
+                <th>Name & Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Created Date</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (adminList && adminList.length > 0) { %>
+                <% adminList.forEach(a => { %>
+                  <% 
+                    const isSuper = a.role === 'SUPER_ADMIN';
+                    const isActive = a.account_status === 'ACTIVE';
+                    const initials = (a.full_name || a.email || 'A').slice(0, 2).toUpperCase();
+                  %>
+                  <tr>
+                    <td>
+                      <div class="avatar-placeholder" style="width: 36px; height: 36px; font-size: 0.85rem; background: #DBEAFE; color: #1955DC;">
+                        <%= initials %>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="fw-700 text-xs text-heading"><%= a.full_name || 'Admin User' %></div>
+                      <div class="text-xs text-muted"><%= a.email %> &bull; Code: <span class="fw-600 text-primary"><%= a.user_code %></span></div>
+                    </td>
+                    <td class="text-xs text-body"><%= a.phone || 'N/A' %></td>
+                    <td>
+                      <span class="admin-badge <%= isSuper ? 'badge-purple' : 'badge-info' %>">
+                        <%= a.role %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if (isActive) { %>
+                        <span class="admin-badge badge-success"><i class="fa fa-circle text-xs me-1"></i> ACTIVE</span>
+                      <% } else { %>
+                        <span class="admin-badge badge-danger">INACTIVE</span>
+                      <% } %>
+                    </td>
+                    <td class="text-xs text-muted"><%= safeFormatDate(a.last_login) %></td>
+                    <td class="text-xs text-muted"><%= safeFormatDate(a.created_at) %></td>
+                    <td class="text-right">
+                      <div class="d-flex justify-content-end gap-1">
+                        <a 
+                          href="/admin/settings/administrators/<%= a.id %>"
+                          class="admin-btn admin-btn-secondary py-1 px-2 text-xs" 
+                          title="View Admin Details"
+                        >
+                          <i class="fa fa-eye me-1"></i> View
+                        </a>
+                        
+                        <% if (locals.user && locals.user.role === 'SUPER_ADMIN' && parseInt(locals.user.id, 10) !== parseInt(a.id, 10)) { %>
+                          <% if (isActive) { %>
+                            <button 
+                              type="button" 
+                              class="admin-btn admin-btn-secondary text-danger py-1 px-2 text-xs" 
+                              data-id="<%= a.id %>"
+                              data-status="INACTIVE"
+                              onclick="toggleAdminStatus(this.dataset.id, this.dataset.status)"
+                              title="Disable Account"
+                            >
+                              Disable
+                            </button>
+                          <% } else { %>
+                            <button 
+                              type="button" 
+                              class="admin-btn admin-btn-secondary text-success py-1 px-2 text-xs" 
+                              data-id="<%= a.id %>"
+                              data-status="ACTIVE"
+                              onclick="toggleAdminStatus(this.dataset.id, this.dataset.status)"
+                              title="Enable Account"
+                            >
+                              Enable
+                            </button>
+                          <% } %>
+
+                          <button 
+                            type="button" 
+                            class="admin-btn admin-btn-danger py-1 px-2 text-xs" 
+                            data-id="<%= a.id %>"
+                            data-email="<%= a.email %>"
+                            onclick="deleteAdminAccount(this.dataset.id, this.dataset.email)"
+                            title="Delete Administrator"
+                          >
+                            Delete
+                          </button>
+                        <% } %>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="8" class="text-center py-4 text-xs text-muted">No sub-administrators found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+      <% } %>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ==========================================================================
+     ADD ADMINISTRATOR MODAL (BOOTSTRAP ADMIN DASHBOARD DESIGN)
+     ========================================================================== -->
+
+<div id="addAdminModalBackdrop" class="modal-backdrop fade" style="display: none; z-index: 1040;"></div>
+
+<div id="addAdminModal" class="modal fade" tabindex="-1" style="display: none; z-index: 1060; overflow-y: auto;">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; background: #FFFFFF; color: var(--admin-heading);">
+      
+      <!-- Modal Header -->
+      <div class="modal-header border-bottom pb-3">
+        <h5 class="modal-title fw-700 text-heading d-flex align-items-center gap-2">
+          <i class="fa fa-user-plus text-primary"></i> Add Administrator Account
+        </h5>
+        <button type="button" class="btn-close" onclick="closeAddAdminModal()" aria-label="Close"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body p-4">
+        <form action="/admin/settings/administrators" method="POST" id="addAdminForm">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          
+          <!-- Personal Information Section -->
+          <h6 class="fw-700 text-xs text-muted text-uppercase tracking-wider mb-3">1. PERSONAL INFORMATION</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="admin-form-label">Full Name <span class="text-danger">*</span></label>
+              <input type="text" name="full_name" class="admin-form-input" placeholder="e.g. Vikram Sharma" required>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Email Address <span class="text-danger">*</span></label>
+              <input type="email" name="email" class="admin-form-input" placeholder="e.g. vikram@microfinance.com" required>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Mobile Number</label>
+              <input type="text" name="phone" class="admin-form-input" placeholder="+91 9876543210">
+            </div>
+          </div>
+
+          <!-- Account Information Section -->
+          <h6 class="fw-700 text-xs text-muted text-uppercase tracking-wider mb-3">2. ACCOUNT CREDENTIALS & ROLE</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="admin-form-label">Username / Code <span class="text-danger">*</span></label>
+              <input type="text" name="username" class="admin-form-input" placeholder="e.g. ADM005" required>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Password <span class="text-danger">*</span></label>
+              <input type="password" name="password" class="admin-form-input" placeholder="••••••••" required>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Confirm Password <span class="text-danger">*</span></label>
+              <input type="password" name="confirm_password" class="admin-form-input" placeholder="••••••••" required>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Administrator Role <span class="text-danger">*</span></label>
+              <select name="role" id="adminRoleSelect" class="admin-form-select" onchange="handleRolePermissionToggle(this.value)" required>
+                <option value="SUPER_ADMIN">SUPER ADMIN (Full Access)</option>
+                <option value="LOAN_OFFICER" selected>LOAN OFFICER (Applications & Loans)</option>
+                <option value="COLLECTION_OFFICER">COLLECTION OFFICER (Repayments & Customers)</option>
+                <option value="ACCOUNT_OFFICER">ACCOUNT OFFICER (Treasury & Reports)</option>
+                <option value="AUDITOR">AUDITOR (Read-Only Reports & Logs)</option>
+                <option value="VIEWER">VIEWER (Dashboard Only)</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Account Status</label>
+              <select name="status" class="admin-form-select">
+                <option value="ACTIVE" selected>Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Module Permissions Matrix Section -->
+          <h6 class="fw-700 text-xs text-muted text-uppercase tracking-wider mb-2">3. GRANULAR MODULE PERMISSIONS</h6>
+          <p class="text-xs text-muted mb-3">Select which sidebar navigation modules this administrator can access.</p>
+          
+          <div class="row g-2 p-3 bg-light rounded-3 border mb-4">
+            <div class="col-md-3">
+              <div class="form-check text-xs">
+                <input class="form-check-input" type="checkbox" name="permissions" value="Dashboard" id="permDash" checked>
+                <label class="form-check-label fw-600 text-heading" for="permDash">Dashboard</label>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check text-xs">
+                <input class="form-check-input" type="checkbox" name="permissions" value="Account Balance" id="permAcc" checked>
+                <label class="form-check-label fw-600 text-heading" for="permAcc">Account Balance</label>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check text-xs">
+                <input class="form-check-input" type="checkbox" name="permissions" value="Applications" id="permApp" checked>
+                <label class="form-check-label fw-600 text-heading" for="permApp">Applications</label>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check text-xs">
+                <input class="form-check-input" type="checkbox" name="permissions" value="Customers" id="permCust" checked>
+                <label class="form-check-label fw-600 text-heading" for="permCust">Customers</label>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check text-xs">
+                <input class="form-check-input" type="checkbox" name="permissions" value="Loans & Disbursal" id="permLoans" checked>
+                <label class="form-check-label fw-600 text-heading" for="permLoans">Loans & Disbursal</label>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check text-xs">
+                <input class="form-check-input" type="checkbox" name="permissions" value="Repayments" id="permRepay" checked>
+                <label class="form-check-label fw-600 text-heading" for="permRepay">Repayments</label>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check text-xs">
+                <input class="form-check-input" type="checkbox" name="permissions" value="Reports" id="permRep" checked>
+                <label class="form-check-label fw-600 text-heading" for="permRep">Reports</label>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check text-xs">
+                <input class="form-check-input" type="checkbox" name="permissions" value="Settings" id="permSet" checked>
+                <label class="form-check-label fw-600 text-heading" for="permSet">Settings</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="button" class="admin-btn admin-btn-secondary" onclick="closeAddAdminModal()">Cancel</button>
+            <button type="submit" class="admin-btn admin-btn-primary"><i class="fa fa-user-check me-1"></i> Create Administrator</button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function openAddAdminModal() {
+    const modalEl = document.getElementById('addAdminModal');
+    const backdrop = document.getElementById('addAdminModalBackdrop');
+    if (modalEl) {
+      modalEl.style.display = 'block';
+      modalEl.style.opacity = '1';
+      modalEl.classList.add('show');
+    }
+    if (backdrop) {
+      backdrop.style.display = 'block';
+      backdrop.style.opacity = '0.5';
+      backdrop.classList.add('show');
+    }
+  }
+
+  function closeAddAdminModal() {
+    const modalEl = document.getElementById('addAdminModal');
+    const backdrop = document.getElementById('addAdminModalBackdrop');
+    if (modalEl) {
+      modalEl.style.display = 'none';
+      modalEl.style.opacity = '0';
+      modalEl.classList.remove('show');
+    }
+    if (backdrop) {
+      backdrop.style.display = 'none';
+      backdrop.style.opacity = '0';
+      backdrop.classList.remove('show');
+    }
+  }
+
+  function handleRolePermissionToggle(role) {
+    const checkboxes = document.querySelectorAll('#addAdminForm input[name="permissions"]');
+    if (role === 'SUPER_ADMIN') {
+      checkboxes.forEach(cb => {
+        cb.checked = true;
+        cb.disabled = true;
+      });
+    } else if (role === 'LOAN_OFFICER') {
+      const loanOfficerDefaults = ['Dashboard', 'Applications', 'Customers', 'Loans & Disbursal'];
+      checkboxes.forEach(cb => {
+        cb.disabled = false;
+        cb.checked = loanOfficerDefaults.includes(cb.value);
+      });
+    } else {
+      checkboxes.forEach(cb => {
+        cb.disabled = false;
+      });
+    }
+  }
+
+  async function toggleAdminStatus(adminId, status) {
+    if (!confirm(`Are you sure you want to change this administrator's status to ${status}?`)) return;
+    try {
+      const res = await fetch(`/admin/settings/administrators/${adminId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        window.location.reload();
+      } else {
+        alert(data.message || 'Failed to update status.');
+      }
+    } catch (e) {
+      alert('Network error while updating administrator status.');
+    }
+  }
+
+  async function deleteAdminAccount(adminId, email) {
+    if (!confirm(`Are you sure you want to delete administrator '${email}'?\n\nThis action cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/admin/settings/administrators/${adminId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        window.location.reload();
+      } else {
+        alert(data.message || 'Failed to delete administrator account.');
+      }
+    } catch (e) {
+      alert('Network error while deleting administrator.');
+    }
+  }
+
+  // Initialize permission toggles & form submit handler
+  document.addEventListener('DOMContentLoaded', () => {
+    const roleSelect = document.getElementById('adminRoleSelect');
+    if (roleSelect) handleRolePermissionToggle(roleSelect.value);
+
+    const addAdminForm = document.getElementById('addAdminForm');
+    if (addAdminForm) {
+      addAdminForm.addEventListener('submit', function() {
+        const checkboxes = this.querySelectorAll('input[name="permissions"]');
+        checkboxes.forEach(cb => cb.disabled = false);
+      });
+    }
+  });
+</script>
+

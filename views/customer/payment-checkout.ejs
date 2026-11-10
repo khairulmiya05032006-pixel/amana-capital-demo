@@ -1,0 +1,87 @@
+<% layout('layouts/main') %>
+
+<div class="dashboard-app-container" style="max-width: 600px; margin: 0 auto;">
+  <div class="app-header-back">
+    <a href="javascript:history.back()" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+    <h1 class="page-title-center">Checkout</h1>
+  </div>
+
+  <div class="glass-panel" style="padding: 24px; margin-bottom: 24px;">
+    <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 16px;">Payment Summary</h3>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+      <span style="color: var(--text-secondary);">Loan Number</span>
+      <span style="font-weight: 500;"><%= emi.loan_number %></span>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+      <span style="color: var(--text-secondary);">Installment No.</span>
+      <span style="font-weight: 500;"><%= emi.installment_number %></span>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px;">
+      <span style="color: var(--text-secondary);">Borrower Name</span>
+      <span style="font-weight: 500;"><%= emi.full_name %></span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+      <span style="color: var(--text-secondary);">Installment Amount</span>
+      <span style="font-weight: 500;">₹<%= Number(emi.remaining_amount).toLocaleString('en-IN') %></span>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px;">
+      <span style="color: var(--text-secondary);">Penalty</span>
+      <span style="font-weight: 500; color: #F59E0B;">₹<%= Number(emi.dynamic_penalty).toLocaleString('en-IN') %></span>
+    </div>
+
+    <% if (emi.installment_status === 'OVERDUE') { %>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: #DC2626; font-size: 0.9rem;">Due Date: <%= new Date(emi.due_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></span>
+        <span style="color: #DC2626; font-size: 0.9rem;">Days Overdue: <%= emi.days_overdue %></span>
+      </div>
+    <% } %>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 1.1rem;">Total Due</span>
+      <span style="font-size: 1.5rem; font-weight: 600; color: #16A34A;">₹<%= Number(emi.total_due).toLocaleString('en-IN') %></span>
+    </div>
+  </div>
+
+  <div class="glass-panel" style="padding: 24px;">
+    <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 16px;">Payment Details (Mock)</h3>
+    
+    <form action="/customer/payments/process" method="POST">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <input type="hidden" name="installmentId" value="<%= emi.id %>">
+      <input type="hidden" name="loanId" value="<%= emi.loan_id %>">
+
+      <div class="form-group mb-4">
+        <label>Payment Method</label>
+        <select name="paymentMethod" class="form-control" required style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
+          <option value="CREDIT_CARD">Credit Card</option>
+          <option value="DEBIT_CARD">Debit Card</option>
+          <option value="UPI">UPI (Google Pay/PhonePe)</option>
+          <option value="NET_BANKING">Net Banking</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-4">
+        <label>Card Number / UPI ID</label>
+        <input type="text" class="form-control" placeholder="XXXX-XXXX-XXXX-XXXX" value="4111 1111 1111 1111" required style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
+      </div>
+
+      <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group" style="flex: 1;">
+          <label>Expiry Date</label>
+          <input type="text" class="form-control" placeholder="MM/YY" value="12/26" required style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>CVV</label>
+          <input type="password" class="form-control" placeholder="***" value="123" required style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1.1rem; font-weight: 600;">
+        <i class="fa-solid fa-lock mr-2"></i> Pay ₹<%= Number(emi.total_due).toLocaleString('en-IN') %>
+      </button>
+      <p style="text-align: center; margin-top: 12px; font-size: 0.8rem; color: var(--text-secondary);">This is a secure 256-bit encrypted simulated connection.</p>
+    </form>
+  </div>
+</div>

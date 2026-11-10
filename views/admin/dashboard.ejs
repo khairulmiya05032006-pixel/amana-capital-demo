@@ -1,0 +1,213 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-kpi-grid">
+  <!-- 0. Admin Account Balance -->
+  <a href="/admin/account" class="admin-kpi-card text-none" style="border-left: 4px solid #14B8A6;">
+    <div class="admin-kpi-icon-wrap icon-teal">
+      <i class="fa fa-wallet"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Account Balance</span>
+      <span class="admin-kpi-value" style="color: #14B8A6;"><%= formatINR(kpis.account_balance) %></span>
+    </div>
+  </a>
+
+  <!-- 1. Total Customers -->
+  <a href="/admin/customers" class="admin-kpi-card text-none">
+    <div class="admin-kpi-icon-wrap icon-blue">
+      <i class="fa fa-users"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Total Customers</span>
+      <span class="admin-kpi-value"><%= kpis.total_customers || 0 %></span>
+    </div>
+  </a>
+
+  <!-- 2. Active Loans -->
+  <a href="/admin/loans" class="admin-kpi-card text-none">
+    <div class="admin-kpi-icon-wrap icon-green">
+      <i class="fa fa-hand-holding-usd"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Active Loans</span>
+      <span class="admin-kpi-value"><%= kpis.active_loans || 0 %></span>
+    </div>
+  </a>
+
+  <!-- 3. Total Money Lent -->
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-amber">
+      <i class="fa fa-file-invoice-dollar"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Total Money Lent</span>
+      <span class="admin-kpi-value"><%= formatINR(kpis.total_money_lent) %></span>
+    </div>
+  </div>
+
+  <!-- 4. Approved Loans -->
+  <a href="/admin/applications?status=APPROVED" class="admin-kpi-card text-none">
+    <div class="admin-kpi-icon-wrap icon-purple">
+      <i class="fa fa-check-circle"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Approved Loans</span>
+      <span class="admin-kpi-value"><%= kpis.approved_loans || 0 %></span>
+    </div>
+  </a>
+
+  <!-- 5. Today's Collections -->
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-blue">
+      <i class="fa fa-chart-line"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Today's Collections</span>
+      <span class="admin-kpi-value"><%= formatINR(kpis.todays_collections) %></span>
+    </div>
+  </div>
+
+  <!-- 6. Total Repayments Received -->
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-teal">
+      <i class="fa fa-coins"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Total Repayments Received</span>
+      <span class="admin-kpi-value"><%= formatINR(kpis.total_repayments_received) %></span>
+    </div>
+  </div>
+
+  <!-- 7. Outstanding Balance -->
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-orange">
+      <i class="fa fa-balance-scale"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Outstanding Balance</span>
+      <span class="admin-kpi-value"><%= formatINR(kpis.outstanding_balance) %></span>
+    </div>
+  </div>
+
+  <!-- 8. Overdue Amount -->
+  <a href="/admin/overdue" class="admin-kpi-card text-none">
+    <div class="admin-kpi-icon-wrap icon-red">
+      <i class="fa fa-exclamation-triangle"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Overdue Amount</span>
+      <span class="admin-kpi-value"><%= formatINR(kpis.overdue_amount) %></span>
+    </div>
+  </a>
+
+  <!-- 9. Closed Loans -->
+  <a href="/admin/loans#closed-loans-section" class="admin-kpi-card" style="text-decoration: none; color: inherit; display: flex;">
+    <div class="admin-kpi-icon-wrap icon-purple">
+      <i class="fa fa-lock"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label" style="color: #9333EA;">Closed Loans</span>
+      <span class="admin-kpi-value"><%= kpis.closed_loans || 0 %></span>
+    </div>
+  </a>
+</div>
+
+<div class="admin-widget-row">
+  <!-- Pending Loan Applications Widget -->
+  <div class="admin-widget">
+    <div class="admin-widget-header">
+      <div class="admin-widget-title">
+        <i class="fa fa-file-alt"></i>
+        Pending Loan Applications
+      </div>
+      <a href="/admin/applications" class="admin-widget-action text-none">View all applications <i class="fa fa-arrow-right text-xs ml-1"></i></a>
+    </div>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Applicant</th>
+          <th>Request</th>
+          <th>Tenure</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (applications && applications.length > 0) { %>
+          <% applications.forEach(app => { %>
+            <tr>
+              <td>
+                <div class="applicant-info">
+                  <div class="avatar-placeholder">
+                    <%= app.applicant_name ? app.applicant_name.substring(0,2).toUpperCase() : 'NA' %>
+                  </div>
+                  <div>
+                    <div class="applicant-name"><%= app.applicant_name %></div>
+                    <div class="applicant-id"><%= app.customer_code %></div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="fw-600 text-heading"><%= formatINR(app.requested_amount) %></div>
+              </td>
+              <td>
+                <div class="text-muted text-sm"><%= app.requested_duration_months %> Months</div>
+              </td>
+              <td class="text-right">
+                <a href="/admin/applications/<%= app.id %>" class="admin-btn admin-btn-primary">Review</a>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="4" class="text-center text-muted py-5">
+              No pending applications.
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Overdue Loans Widget -->
+  <div class="admin-widget">
+    <div class="admin-widget-header">
+      <div class="admin-widget-title">
+        <i class="fa fa-clock text-danger"></i>
+        Overdue Loans
+      </div>
+      <a href="/admin/overdue" class="admin-widget-action text-none">View all overdue loans <i class="fa fa-arrow-right text-xs ml-1"></i></a>
+    </div>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Loan</th>
+          <th>Customer</th>
+          <th class="text-right">Overdue Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (typeof overdueLoans !== 'undefined' && overdueLoans.length > 0) { %>
+          <% overdueLoans.forEach(loan => { %>
+            <tr>
+              <td>
+                <div class="fw-600 text-sm text-heading"><%= loan.loan_number || 'N/A' %></div>
+              </td>
+              <td>
+                <div class="fw-500 text-sm text-heading"><%= loan.customer_name || 'N/A' %></div>
+              </td>
+              <td class="text-right">
+                <div class="text-danger"><%= formatINR(loan.amount_due || 0) %></div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="3" class="text-center text-muted py-5">
+              No overdue loans!
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

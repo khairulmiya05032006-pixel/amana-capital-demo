@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' | AMANAH CAPITAL ADMIN' : 'Admin Dashboard | AMANAH CAPITAL' %></title>
+  <meta name="description" content="Amanah Capital Admin Portal">
+  
+  <!-- Existing Tokens and Styles -->
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <!-- New Admin Styles -->
+  <link rel="stylesheet" href="/css/admin.css">
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+  
+  <div class="admin-wrapper">
+    
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="admin-sidebar-header">
+        <div class="admin-sidebar-logo">
+          <img src="/brand-logo/AMANATH_CAPITAL_Logo-removebg-preview.png" alt="brand img">
+        </div>
+        <div class="admin-sidebar-brand">
+          AMANAH<span>CAPITAL</span>
+        </div>
+      </div>
+
+      <nav class="admin-sidebar-nav">
+        <% 
+          const curr = typeof currentPath !== 'undefined' && currentPath ? currentPath : (locals.currentPath || ''); 
+          const checkActive = (navPath) => (typeof isActiveNav === 'function' ? isActiveNav(curr, navPath) : curr.startsWith(navPath));
+        %>
+        
+        <% if (hasPermission('dashboard.view')) { %>
+        <a href="/admin/dashboard" class="admin-nav-item <%= checkActive('/admin/dashboard') ? 'active' : '' %>">
+          <i class="fa fa-th-large"></i> Dashboard
+        </a>
+        <% } %>
+
+        <% if (hasPermission('account.view')) { %>
+        <a href="/admin/account" class="admin-nav-item <%= checkActive('/admin/account') ? 'active' : '' %>">
+          <i class="fa fa-wallet"></i> Account Balance
+        </a>
+        <% } %>
+        
+        <% if (hasPermission('applications.view')) { %>
+        <a href="/admin/applications" class="admin-nav-item <%= checkActive('/admin/applications') ? 'active' : '' %>">
+          <i class="fa fa-file-alt"></i> Applications
+        </a>
+        <% } %>
+
+        <% if (hasPermission('customers.create')) { %>
+        <a href="/admin/customers/new" class="admin-nav-item <%= checkActive('/admin/customers/new') ? 'active' : '' %>">
+          <i class="fa fa-user-plus"></i> Register Customer
+        </a>
+        <% } %>
+
+        <% if (hasPermission('customers.view')) { %>
+        <a href="/admin/customers" class="admin-nav-item <%= checkActive('/admin/customers') && !checkActive('/admin/customers/new') ? 'active' : '' %>">
+          <i class="fa fa-users"></i> Customers
+        </a>
+        <% } %>
+        
+        
+        <% if (hasPermission('loans.view')) { %>
+        <a href="/admin/loans" class="admin-nav-item <%= checkActive('/admin/loans') ? 'active' : '' %>">
+          <i class="fa fa-file-invoice-dollar"></i> Loans & Disbursal
+        </a>
+
+        <a href="/admin/overdue" class="admin-nav-item <%= checkActive('/admin/overdue') ? 'active' : '' %>">
+          <i class="fa fa-exclamation-circle"></i> Overdue Loans
+        </a>
+        <% } %>
+        
+        <% if (hasPermission('repayments.view')) { %>
+        <a href="/admin/repayments" class="admin-nav-item <%= checkActive('/admin/repayments') ? 'active' : '' %>">
+          <i class="fa fa-sync-alt"></i> Repayments
+        </a>
+        <% } %>
+        
+        <% if (hasPermission('reports.view')) { %>
+        <a href="/admin/reports" class="admin-nav-item <%= checkActive('/admin/reports') ? 'active' : '' %>">
+          <i class="fa fa-chart-bar"></i> Reports
+        </a>
+        <% } %>
+        
+        <% if (hasPermission('settings.view')) { %>
+        <a href="/admin/settings" class="admin-nav-item <%= checkActive('/admin/settings') ? 'active' : '' %>">
+          <i class="fa fa-cog"></i> Settings
+        </a>
+        <% } %>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <form action="/auth/logout" method="POST" style="margin: 0;">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <button type="submit" class="admin-nav-item" style="background: none; border: none; width: 100%; text-align: left; cursor: pointer;">
+            <i class="fa fa-sign-out-alt"></i> Log Out
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      
+      <!-- Topbar -->
+      <header class="admin-header">
+        <div class="admin-header-left">
+          <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fa fa-bars"></i>
+          </button>
+          <div class="breadcrumb">
+            Dashboard <i class="fa fa-chevron-right" style="font-size: 0.65rem;"></i> <span class="breadcrumb-active"><%= typeof title !== 'undefined' ? title : 'Overview' %></span>
+          </div>
+        </div>
+
+        <div class="admin-header-right">
+          <div class="admin-search">
+            <i class="fa fa-search"></i>
+            <input type="text" placeholder="Search...">
+          </div>
+          
+          <div class="admin-notifications">
+            <i class="fa fa-bell"></i>
+            <span class="badge">3</span>
+          </div>
+
+          <!-- Admin Profile Dropdown Menu -->
+          <div class="position-relative">
+            <div class="admin-profile" id="adminProfileDropdownToggle" style="cursor: pointer;">
+              <div class="admin-profile-info" style="text-align: right;">
+                <span class="admin-profile-name">Admin User</span>
+                <span class="admin-profile-role">Administrator</span>
+              </div>
+              <div class="admin-profile-img">
+                <i class="fa fa-user" style="color: var(--text-secondary);"></i>
+              </div>
+              <i class="fa fa-chevron-down" style="font-size: 0.75rem; color: var(--text-secondary);"></i>
+            </div>
+
+            <div 
+              id="adminProfileMenu" 
+              class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" 
+              style="display: none; position: absolute; right: 0; top: 100%; width: 220px; z-index: 1060; border-radius: 12px; background: #FFFFFF; border: 1px solid var(--admin-border) !important;"
+            >
+              <div class="px-3 py-2 border-bottom mb-1">
+                <div class="fw-700 text-sm text-heading">Admin User</div>
+                <div class="text-xs text-muted">admin@microfinance.com</div>
+              </div>
+              <a href="/admin/settings?tab=profile" class="dropdown-item py-2 text-xs fw-600 rounded d-flex align-items-center gap-2">
+                <i class="fa fa-user text-primary" style="width: 16px;"></i> My Profile
+              </a>
+              <a href="/admin/settings" class="dropdown-item py-2 text-xs fw-600 rounded d-flex align-items-center gap-2">
+                <i class="fa fa-cog text-primary" style="width: 16px;"></i> Settings
+              </a>
+              <a href="/admin/settings?tab=security" class="dropdown-item py-2 text-xs fw-600 rounded d-flex align-items-center gap-2">
+                <i class="fa fa-key text-primary" style="width: 16px;"></i> Change Password
+              </a>
+              <a href="/admin/settings?tab=activity-logs" class="dropdown-item py-2 text-xs fw-600 rounded d-flex align-items-center gap-2">
+                <i class="fa fa-list-alt text-primary" style="width: 16px;"></i> Activity Log
+              </a>
+              <a href="#" onclick="alert('System Documentation & Helpdesk v1.0'); return false;" class="dropdown-item py-2 text-xs fw-600 rounded d-flex align-items-center gap-2">
+                <i class="fa fa-question-circle text-primary" style="width: 16px;"></i> Help & Support
+              </a>
+              <div class="dropdown-divider my-1"></div>
+              <form action="/auth/logout" method="POST" style="margin: 0;">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                <button type="submit" class="dropdown-item py-2 text-xs fw-600 rounded text-danger d-flex align-items-center gap-2 w-100 border-0 bg-transparent">
+                  <i class="fa fa-sign-out-alt" style="width: 16px;"></i> Logout
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Inner Content -->
+      <div class="admin-content-inner">
+        <%- include('../partials/messages') %>
+        <%- body -%>
+      </div>
+      
+      <!-- Footer -->
+      <footer style="padding: 24px 32px; font-weight: 500; color: var(--surface-900); font-size: 0.85rem; text-align: center; border-top: 1px solid var(--surface-200); margin-top: auto;">
+        &copy; <%= new Date().getFullYear() %> Amanah Capital. All rights reserved.
+      </footer>
+    </main>
+  </div>
+
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('adminSidebar');
+    if(toggleBtn && sidebar) {
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('show');
+      });
+    }
+
+    // Topbar Profile Menu Toggle
+    const profileToggle = document.getElementById('adminProfileDropdownToggle');
+    const profileMenu = document.getElementById('adminProfileMenu');
+    if (profileToggle && profileMenu) {
+      profileToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isShown = profileMenu.style.display === 'block';
+        profileMenu.style.display = isShown ? 'none' : 'block';
+      });
+      document.addEventListener('click', () => {
+        profileMenu.style.display = 'none';
+      });
+      profileMenu.addEventListener('click', (e) => e.stopPropagation());
+    }
+  </script>
+</body>
+</html>

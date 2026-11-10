@@ -1,0 +1,33 @@
+<div class="amanah-global-notifications mb-4">
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center" role="alert">
+      <i class="fa fa-check-circle me-2 fs-5"></i>
+      <span class="fw-600 flex-grow-1"><%= success %></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+  
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center" role="alert">
+      <i class="fa fa-exclamation-circle me-2 fs-5"></i>
+      <span class="fw-600 flex-grow-1"><%= error %></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <% if (typeof warning !== 'undefined' && warning) { %>
+    <div class="alert alert-warning alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center" role="alert">
+      <i class="fa fa-exclamation-triangle me-2 fs-5"></i>
+      <span class="fw-600 flex-grow-1"><%= warning %></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+  
+  <% if (typeof info !== 'undefined' && info) { %>
+    <div class="alert alert-info alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center" role="alert">
+      <i class="fa fa-info-circle me-2 fs-5"></i>
+      <span class="fw-600 flex-grow-1"><%= info %></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+</div>

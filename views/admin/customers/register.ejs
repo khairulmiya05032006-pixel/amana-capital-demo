@@ -1,0 +1,59 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a href="/admin/customers" class="admin-btn admin-btn-secondary admin-btn-icon">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <div>
+      <h1 class="admin-page-title"><%= title %></h1>
+      <p class="admin-page-desc">Create a customer login account for Amanah Capital.</p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.error) { %>
+  <div class="admin-widget bg-danger-soft mb-4">
+    <span class="text-danger fw-600"><%= error %></span>
+  </div>
+<% } %>
+
+<div class="admin-widget">
+  <form action="/admin/customers" method="POST">
+    
+    <h3 class="text-primary fw-600 mb-3" style="font-size: 1.1rem;">Account Information</h3>
+    <div class="d-grid grid-cols-auto gap-4 mb-5">
+      <div class="admin-form-group">
+        <label class="admin-form-label">Full Name *</label>
+        <input type="text" name="full_name" value="<%= locals.customer ? customer.full_name : '' %>" required class="admin-form-input" placeholder="e.g. Rahul Khan">
+      </div>
+      
+      <div class="admin-form-group">
+        <label class="admin-form-label">Email Address *</label>
+        <input type="email" name="email" value="<%= locals.customer ? customer.email : '' %>" required class="admin-form-input" placeholder="e.g. rahul@example.com">
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">Phone Number *</label>
+        <input type="tel" name="phone" pattern="[6-9][0-9]{9}" title="Valid 10-digit mobile number" value="<%= locals.customer ? customer.phone : '' %>" required class="admin-form-input" placeholder="e.g. 9876543210">
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">Password *</label>
+        <input type="password" name="password" required class="admin-form-input" minlength="8" placeholder="Minimum 8 characters">
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">Confirm Password *</label>
+        <input type="password" name="confirm_password" required class="admin-form-input" minlength="8" placeholder="Must match password">
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+      <a href="/admin/customers" class="admin-btn admin-btn-secondary">Cancel</a>
+      <button type="submit" class="admin-btn admin-btn-primary">Create Customer Account</button>
+    </div>
+
+  </form>
+</div>
+

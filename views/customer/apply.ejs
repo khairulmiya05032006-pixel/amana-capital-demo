@@ -1,0 +1,182 @@
+<% layout('layouts/main') %>
+
+<div class="dashboard-app-container">
+  
+  <div class="app-header-back" style="margin-bottom: 1rem;">
+    <a href="/customer/dashboard" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+    <h1 class="page-title-center">Apply Loan</h1>
+  </div>
+
+  <div class="camera-upload-container">
+    <div class="camera-btn">
+      <i class="fa-solid fa-camera"></i>
+    </div>
+    <span class="camera-text">Add Photo (Optional)</span>
+  </div>
+
+  <form id="applyForm">
+    <div id="alertContainer"></div>
+
+    <div class="apply-form-container">
+      
+      <!-- Profile Information (Matches Mockup) -->
+      <div class="icon-input-group">
+        <label class="icon-input-label">Full Name <span class="text-muted text-xs ms-1">(Linked to Account)</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-regular fa-user"></i>
+          <input type="text" name="full_name" value="<%= profile.full_name || '' %>" readonly style="background-color: #f1f5f9; cursor: not-allowed;" required>
+        </div>
+      </div>
+
+      <div class="icon-input-group">
+        <label class="icon-input-label">Phone Number <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-solid fa-phone"></i>
+          <input type="tel" name="phone" placeholder="91+ 8167816345" value="<%= profile.phone || '' %>" required>
+        </div>
+      </div>
+
+      <div class="icon-input-group">
+        <label class="icon-input-label">Aadhaar / PAN <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-regular fa-id-card"></i>
+          <input type="text" name="pan_number" placeholder="e.g. ABCDE1234F" value="<%= profile.pan_number || '' %>" required>
+        </div>
+      </div>
+
+      <div class="icon-input-group">
+        <label class="icon-input-label">Occupation <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-solid fa-briefcase"></i>
+          <input type="text" name="occupation" placeholder="e.g. Software Engineer" value="<%= profile.occupation || '' %>" required>
+        </div>
+      </div>
+
+      <div class="icon-input-group">
+        <label class="icon-input-label">Address <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-regular fa-map"></i>
+          <input type="text" name="address" placeholder="e.g. 123 Main Street" value="<%= profile.address || '' %>" required>
+        </div>
+      </div>
+      <div class=icon-input-group>
+        <label class="icon-input-label">Loan Amount <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-solid fa-money-bill-wave"></i>
+          <input type="number" name="requested_amount" min="100" max="50000" step="100" placeholder="e.g. 5000" required>
+        </div>
+      </div>
+
+      <!-- Financial Data required for backend API -->
+      <div class="icon-input-group">
+        <label class="icon-input-label">Monthly Income <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-solid fa-coins"></i>
+          <input type="number" name="monthly_income" min="0" placeholder="e.g. 4000" required>
+        </div>
+      </div>
+
+      <div class="icon-input-group">
+        <label class="icon-input-label">Loan Type <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-solid fa-list"></i>
+          <select name="loan_type_id" required>
+            <option value="1">Personal Loan (Max &#8377;10,000)</option>
+            <option value="2">Business Loan (Max &#8377;50,000)</option>
+            <option value="3">Education Loan (Max &#8377;20,000)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="icon-input-group">
+        <label class="icon-input-label">Duration (Months) <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-regular fa-clock"></i>
+          <input type="number" name="requested_duration_months" min="6" max="60" step="6" placeholder="e.g. 24" required>
+        </div>
+      </div>
+
+      <div class="icon-input-group">
+        <label class="icon-input-label">Loan Purpose <span class="required">*</span></label>
+        <div class="icon-input-wrapper">
+          <i class="fa-regular fa-comment-dots"></i>
+          <input type="text" name="loan_purpose" placeholder="e.g. Medical Expenses" required>
+        </div>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <button type="submit" class="btn btn-dark" id="submitBtn" style="width: 100%;">Apply Loan</button>
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/customer/dashboard" class="nav-item">
+      <i class="fa-solid fa-building-columns"></i>
+      <span>Home</span>
+    </a>
+    <a href="/customer/loans" class="nav-item">
+      <i class="fa-solid fa-file-invoice"></i>
+      <span>Loan</span>
+    </a>
+    <a href="/customer/apply" class="nav-item active">
+      <i class="fa-regular fa-calendar-check"></i>
+      <span>Apply</span>
+    </a>
+    <a href="/customer/profile" class="nav-item">
+      <i class="fa-regular fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+</div>
+
+<script>
+document.getElementById('applyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const form = e.target;
+  const btn = document.getElementById('submitBtn');
+  const alertContainer = document.getElementById('alertContainer');
+  
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  
+  alertContainer.innerHTML = '';
+  btn.disabled = true;
+  btn.innerText = 'Submitting...';
+  
+  try {
+    const response = await fetch('/api/applications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
+      alertContainer.innerHTML = `<div class="alert alert-success" style="margin-bottom: 20px;">${result.message || 'Application submitted successfully! Redirecting...'}</div>`;
+      setTimeout(() => {
+        window.location.href = '/customer/dashboard';
+      }, 1500);
+    } else {
+      alertContainer.innerHTML = `<div class="alert alert-error" style="margin-bottom: 20px;">
+        <strong>Action Not Allowed:</strong><br>
+        ${result.message || 'An error occurred.'}
+      </div>`;
+      btn.disabled = false;
+      btn.innerText = 'Apply Loan';
+    }
+  } catch (error) {
+    alertContainer.innerHTML = `<div class="alert alert-error" style="margin-bottom: 20px;">A network error occurred. Please try again.</div>`;
+    btn.disabled = false;
+    btn.innerText = 'Apply Loan';
+  }
+});
+</script>

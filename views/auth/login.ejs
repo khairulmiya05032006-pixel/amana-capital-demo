@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - XYZ Trust</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+ 
+    <div class="auth-page-wrapper">
+
+      <div class="auth-container">
+        
+        <div class="auth-header-login">
+          <h1 class="auth-title-login">Welcome back</h1>
+          <p class="auth-subtitle-login">Securely manage your finances.</p>
+        </div>
+
+        <h2 class="auth-section-title">Login</h2>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-error">
+            <%= error %>
+          </div>
+        <% } %>
+
+        <% if (typeof success !== 'undefined' && success) { %>
+          <div class="alert alert-success">
+            <%= success %>
+          </div>
+        <% } %>
+
+        <form action="/auth/login" method="POST">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <div class="auth-form-group">
+            <label class="auth-label" for="email">Email / Phone</label>
+            <div class="auth-input-wrapper">
+              <i class="fa-regular fa-user left-icon" aria-hidden="true"></i>
+              <input type="text" id="email" name="email" class="auth-input <%= locals.errors && errors.email ? 'input-error' : '' %>" placeholder="username@gmail.com or 1234567890" value="<%= locals.formData && formData.email ? formData.email : '' %>" autocomplete="username" required>
+            </div>
+            <% if (locals.errors && errors.email) { %>
+              <span class="field-error" style="color: #ef4444; font-size: 0.85rem; margin-top: 4px; display: block;"><%= errors.email.msg %></span>
+            <% } %>
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="password">Password</label>
+            <div class="auth-input-wrapper">
+              <i class="fa-solid fa-lock left-icon" aria-hidden="true"></i>
+              <input type="password" id="password" name="password" class="auth-input <%= locals.errors && errors.password ? 'input-error' : '' %>" placeholder="Password" autocomplete="current-password" required>
+              <button type="button" class="auth-password-toggle toggle-password" aria-label="Show password">
+                <i class="fa-regular fa-eye-slash" aria-hidden="true"></i>
+              </button>
+            </div>
+            <% if (locals.errors && errors.password) { %>
+              <span class="field-error" style="color: #ef4444; font-size: 0.85rem; margin-top: 4px; display: block;"><%= errors.password.msg %></span>
+            <% } %>
+          </div>
+
+          <button type="submit" class="auth-btn-primary">Login</button>
+        </form>
+
+        <div class="auth-footer">
+          Don't have an account? Please contact Amanah Capital to register.
+        </div>
+
+        <div class="auth-trust-strip">
+          <div class="auth-trust-icons">
+            <i class="fa-solid fa-shield" aria-hidden="true"></i>
+            <i class="fa-solid fa-key" aria-hidden="true"></i>
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          </div>
+          <p class="auth-trust-text">Amanah Capital Trust utilizes bank-grade 256-bit encryption to keep your data safe</p>
+        </div>
+
+      </div>
+    </div>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

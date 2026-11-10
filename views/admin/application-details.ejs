@@ -1,0 +1,213 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a href="/admin/dashboard" class="admin-btn admin-btn-secondary admin-btn-icon">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <div>
+      <h1 class="admin-page-title">Application Details</h1>
+      <p class="admin-page-desc">Review Application #<%= app.application_number %></p>
+    </div>
+  </div>
+</div>
+
+<div class="d-grid grid-cols-2 align-items-start">
+  
+  <!-- Left Column: Details -->
+  <div class="d-flex flex-column gap-4">
+    
+    <!-- Applicant Profile -->
+    <div class="admin-widget">
+      <div class="admin-widget-header" style="border-bottom: 1px solid var(--admin-border); margin-bottom: 1.5rem; padding-bottom: 0.75rem;">
+        <h3 class="admin-widget-title m-0">Applicant Profile</h3>
+      </div>
+      <div class="d-grid gap-4" style="grid-template-columns: 1fr 1fr;">
+        <div>
+          <label class="admin-form-label mb-1">Full Name</label>
+          <div class="fw-500 text-heading"><%= app.applicant_name %></div>
+        </div>
+        <div>
+          <label class="admin-form-label mb-1">Phone Number</label>
+          <div class="fw-500 text-heading"><%= app.applicant_phone %></div>
+        </div>
+        <div>
+          <label class="admin-form-label mb-1">Aadhaar / PAN</label>
+          <div class="fw-500 text-heading"><%= app.applicant_pan || 'Not Provided' %></div>
+        </div>
+        <div>
+          <label class="admin-form-label mb-1">Occupation</label>
+          <div class="fw-500 text-heading"><%= app.applicant_occupation || 'Not Provided' %></div>
+        </div>
+        <div style="grid-column: span 2;">
+          <label class="admin-form-label mb-1">Address</label>
+          <div class="fw-500 text-heading"><%= app.applicant_address || 'Not Provided' %></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Details -->
+    <div class="admin-widget">
+      <div class="admin-widget-header" style="border-bottom: 1px solid var(--admin-border); margin-bottom: 1.5rem; padding-bottom: 0.75rem;">
+        <h3 class="admin-widget-title m-0">Loan Request Details</h3>
+      </div>
+      <div class="d-grid gap-4" style="grid-template-columns: 1fr 1fr;">
+        <div>
+          <label class="admin-form-label mb-1">Requested Amount</label>
+          <div class="fw-600 text-primary" style="font-size: 1.25rem;">₹<%= Number(app.requested_amount).toLocaleString('en-IN') %></div>
+        </div>
+        <div>
+          <label class="admin-form-label mb-1">Monthly Income</label>
+          <div class="fw-500 text-heading">₹<%= Number(app.monthly_income).toLocaleString('en-IN') %></div>
+        </div>
+        <div style="grid-column: span 2;">
+          <label class="admin-form-label mb-1">Loan Purpose</label>
+          <div class="fw-500 text-body bg-secondary-soft p-3 rounded border" style="background: #F3F4F6; border: 1px solid var(--admin-border); border-radius: 8px;"><%= app.loan_purpose %></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column: Actions -->
+  <div class="d-flex flex-column gap-4 position-relative" style="position: sticky; top: 2rem;">
+    
+    <div class="admin-widget">
+      <h3 class="text-heading text-center mt-0 mb-4 fw-700">Review Action</h3>
+      
+      <% if (app.application_status === 'APPROVED' || app.application_status === 'REJECTED') { %>
+        <div class="text-center p-4 rounded app-status-banner <%= app.application_status === 'APPROVED' ? 'app-status-approved' : 'app-status-rejected' %>">
+          <i class="fa <%= app.application_status === 'APPROVED' ? 'fa-check-circle text-success' : 'fa-times-circle text-danger' %> mb-2" style="font-size: 2rem;"></i>
+          <h4 class="m-0 fw-700 <%= app.application_status === 'APPROVED' ? 'text-success' : 'text-danger' %>">Application <%= app.application_status %></h4>
+          <p class="mt-2 mb-0 text-sm text-body">This application has been reviewed and processed.</p>
+          
+          <% if (app.application_status === 'APPROVED' && app.approved_principal) { %>
+            <div class="mt-3 pt-3 border-top text-start text-xs" style="border-color: rgba(0,0,0,0.1) !important;">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Approved Principal:</span>
+                <span class="fw-700 text-heading">₹<%= Number(app.approved_principal).toLocaleString('en-IN', {minimumFractionDigits: 2}) %></span>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Flat Interest:</span>
+                <span class="fw-700 text-heading">₹<%= Number(app.approved_interest_amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2}) %></span>
+              </div>
+              <% if (parseFloat(app.approved_rounding_adjustment || 0) > 0) { %>
+                <div class="d-flex justify-content-between mb-1">
+                  <span class="text-muted">Rounding Adjustment:</span>
+                  <span class="fw-700 text-primary">+₹<%= Number(app.approved_rounding_adjustment).toLocaleString('en-IN', {minimumFractionDigits: 2}) %></span>
+                </div>
+              <% } %>
+              <div class="d-flex justify-content-between pt-1 border-top" style="border-color: rgba(0,0,0,0.1) !important;">
+                <span class="fw-700 text-heading">Total Payable:</span>
+                <span class="fw-800 text-success">₹<%= Math.round(app.approved_total_payable || 0).toLocaleString('en-IN') %></span>
+              </div>
+            </div>
+          <% } %>
+        </div>
+        <style>
+          .app-status-approved { background: #DCFCE7; border: 1px solid #86EFAC; border-radius: 8px; }
+          .app-status-rejected { background: #FEE2E2; border: 1px solid #FCA5A5; border-radius: 8px; }
+        </style>
+      <% } else { %>
+
+        <%
+          const canApprove = typeof hasPermission === 'function' ? hasPermission('applications.approve') : (locals.user && locals.user.role === 'SUPER_ADMIN');
+          const canReject  = typeof hasPermission === 'function' ? hasPermission('applications.reject')  : (locals.user && locals.user.role === 'SUPER_ADMIN');
+        %>
+
+        <% if (!canApprove && !canReject) { %>
+          <!-- No action permissions — read-only viewer -->
+          <div class="text-center p-4 rounded" style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px;">
+            <i class="fa fa-eye-slash text-muted mb-2" style="font-size: 2rem;"></i>
+            <h5 class="m-0 fw-600 text-muted">View Only</h5>
+            <p class="mt-2 mb-0 text-xs text-muted">Your role does not have permission to approve or reject applications.</p>
+          </div>
+        <% } %>
+
+        <% if (canApprove) { %>
+        <!-- Approve Form -->
+        <div class="mb-4 pb-4">
+          <form action="/api/applications/<%= app.id %>/approve" method="POST" id="approveForm">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <h4 class="text-success mt-0 mb-3 fw-600"><i class="fa fa-check-circle me-1"></i>Approve Loan</h4>
+            
+            <div class="admin-form-group">
+              <label class="admin-form-label">Loan Scheme</label>
+              <select name="scheme_id" id="schemeId" class="admin-form-select" required>
+                <option value="">-- Select a Scheme --</option>
+                <% if(typeof activeSchemes !== 'undefined') { activeSchemes.forEach(s => { %>
+                  <option value="<%= s.id %>" 
+                    data-interest-amount="<%= s.base_interest_amount || 0 %>"
+                    data-rate="<%= s.base_interest_rate %>" 
+                    data-duration="<%= s.duration_value %>"
+                    data-unit="<%= s.duration_unit %>"
+                    data-freq="<%= s.repayment_frequency %>">
+                    <%= s.scheme_name %> (<%= s.repayment_frequency %>)
+                  </option>
+                <% }) } %>
+              </select>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Approved Amount (₹)</label>
+              <input type="number" step="0.01" min="1" name="approvedAmount" id="approvedAmount" class="admin-form-input" value="<%= app.requested_amount %>" required>
+            </div>
+
+            <div class="form-check mb-3" style="color: #94A3B8;">
+              <input class="form-check-input" type="checkbox" id="overrideScheme">
+              <label class="form-check-label text-sm fw-600" for="overrideScheme">
+                Override Scheme Defaults
+              </label>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Final Interest Amount (₹)</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted">₹</span>
+                <input type="number" step="0.01" min="0" name="interestAmount" id="interestAmount" class="admin-form-input border-start-0 ps-0 fw-600 text-heading bg-light" readonly required placeholder="0.00" value="0.00">
+              </div>
+              <small class="text-muted text-xs d-block mt-1">Enter the total flat interest amount for the entire loan. This amount will be added directly to the approved principal.</small>
+            </div>
+            
+            <div class="admin-form-group">
+              <label class="admin-form-label">Final Duration <span id="durationUnitLabel" class="text-muted fw-normal"></span></label>
+              <input type="number" min="1" step="1" name="durationValue" id="durationValue" class="admin-form-input bg-light" readonly required>
+            </div>
+
+            <div id="schedulePreviewBox" class="p-3 mb-4 rounded d-none" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 2px 8px rgba(15,23,42,0.06);">
+              <h5 class="fw-700 mb-3 text-sm d-flex align-items-center gap-2" style="color: #0F172A;">
+                <i class="fa-solid fa-calendar-check text-primary"></i> Live Loan Calculation & Dynamic Calendar
+              </h5>
+              <div id="schedulePreviewContent" class="text-sm"></div>
+            </div>
+
+            <button type="submit" class="admin-btn admin-btn-success w-100" id="btnConfirmApprove" disabled>Confirm Approval</button>
+          </form>
+        </div>
+        <% } %>
+
+        <% if (canReject) { %>
+        <!-- Reject Form -->
+         <hr>
+         <br>
+        <div>
+          <form action="/api/applications/<%= app.id %>/reject" method="POST">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <h4 class="text-danger mt-0 mb-3 fw-600"><i class="fa fa-times-circle me-1"></i>Reject Application</h4>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Rejection Reason (Required)</label>
+              <textarea name="remarks" class="admin-form-textarea" rows="3" placeholder="Provide a detailed reason for rejection. This will be shown to the customer." required style="resize: vertical;"></textarea>
+            </div>
+            <button type="submit" class="admin-btn admin-btn-danger">Reject Application</button>
+          </form>
+        </div>
+        <% } %>
+
+      <% } %>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/admin/application-approval.js"></script>

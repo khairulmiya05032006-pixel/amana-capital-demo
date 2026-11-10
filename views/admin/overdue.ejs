@@ -1,0 +1,83 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Overdue Installments</h1>
+    <p class="admin-page-desc">Track and manage delinquent loan repayments.</p>
+  </div>
+</div>
+
+<div class="admin-widget bg-warning-soft mb-4 d-flex align-items-center justify-content-between p-3" style="border-left: 4px solid var(--warning);">
+  <div class="d-flex align-items-center gap-3">
+    <i class="fa fa-exclamation-triangle text-warning" style="font-size: 1.5rem;"></i>
+    <div>
+      <div class="fw-600 text-heading">Showing latest 100 overdue installments</div>
+      <div class="text-sm text-body">Review delinquent accounts and initiate offline collection.</div>
+    </div>
+  </div>
+  <div class="d-flex gap-4">
+    <div class="text-right">
+      <div class="text-xs text-muted">Overdue Count</div>
+      <div class="fw-700 text-danger" style="font-size: 1.25rem;"><%= totalOverdueCount || 0 %></div>
+    </div>
+    <div class="text-right">
+      <div class="text-xs text-muted">Total Overdue Amount</div>
+      <div class="fw-700 text-danger" style="font-size: 1.25rem;">₹<%= Number(totalOverdueAmount || 0).toLocaleString('en-IN') %></div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-widget">
+  <table class="admin-table w-100">
+    <thead>
+      <tr>
+        <th>Loan Number</th>
+        <th>Borrower Name</th>
+        <th>Phone</th>
+        <th>Inst. Count</th>
+        <th>Oldest Due Date</th>
+        <th>EMI Amount</th>
+        <th>Penalty</th>
+        <th>Remaining Amount</th>
+        <th>Days Overdue</th>
+        <th class="text-right">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (overdueLoans && overdueLoans.length > 0) { %>
+        <% overdueLoans.forEach(item => { %>
+          <tr style="<%= item.days_overdue > 30 ? 'background-color: rgba(220, 38, 38, 0.08);' : '' %>">
+            <td class="fw-600 text-primary"><%= item.loan_number %></td>
+            <td class="fw-500 text-heading"><%= item.customer_name || 'N/A' %></td>
+            <td class="text-body"><%= item.customer_phone || 'N/A' %></td>
+            <td class="text-body fw-500"><%= item.installment_count %></td>
+            <td class="text-danger fw-500"><%= new Date(item.due_date).toLocaleDateString('en-IN') %></td>
+            <td class="text-body">₹<%= Number(item.installment_amount).toLocaleString('en-IN') %></td>
+            <td class="text-warning">₹<%= Number(item.penalty_amount || 0).toLocaleString('en-IN') %></td>
+            <td class="fw-600 text-danger">₹<%= Number(item.amount_due).toLocaleString('en-IN') %></td>
+            <td>
+              <span class="admin-badge <%= item.days_overdue > 30 ? 'badge-danger' : 'badge-warning' %>">
+                <%= item.days_overdue %> days
+              </span>
+            </td>
+            <td class="text-right">
+              <a href="/admin/repayments?loanId=<%= item.loan_number %>" class="admin-btn admin-btn-primary py-1 px-3 text-xs">
+                Record Payment
+              </a>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="10" class="text-center text-muted py-5">
+            <div class="admin-empty-state">
+              <i class="fa fa-check-circle text-success" style="font-size: 2rem;"></i>
+              <div class="admin-empty-title">No Overdue Loans</div>
+              <div class="admin-empty-desc">All customer loan installments are currently up to date.</div>
+            </div>
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

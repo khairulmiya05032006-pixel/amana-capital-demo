@@ -1,0 +1,471 @@
+<% layout('layouts/adminLayout') %>
+
+<% 
+  const safeFormatINR = typeof formatINR === 'function' ? formatINR : (v) => '₹' + Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const safeFormatDate = typeof formatDate === 'function' ? formatDate : (d) => d ? new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+%>
+
+<!-- Header & Title -->
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Offline Loan Repayments</h1>
+    <p class="admin-page-desc">Search active loans, filter by frequency, and receive customer repayments.</p>
+  </div>
+</div>
+
+
+
+<!-- Frequency Summary Cards -->
+<div class="admin-kpi-grid mb-4" >
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-red">
+      <i class="fa fa-balance-scale"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label text-danger">Total Outstanding</span>
+      <span class="admin-kpi-value"><%= safeFormatINR(summary.total_outstanding) %></span>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter Toolbar Widget -->
+<div class="admin-widget mb-4">
+  <div class="admin-widget-header mb-0">
+    <h3 class="admin-widget-title m-0">
+      <i class="fa fa-search"></i> Loan Lookup & Filter Toolbar
+    </h3>
+  </div>
+
+  <div class="admin-table-toolbar mt-3 flex-column align-items-start">
+    <form action="/admin/repayments" method="GET" class="d-flex gap-2 flex-wrap w-100">
+      <!-- Hidden field for keeping status -->
+      <input type="hidden" name="status" value="<%= currentStatus %>">
+      <!-- Hidden field for keeping frequency -->
+      <input type="hidden" name="frequency" value="<%= currentFrequency %>">
+      
+      <div class="admin-search flex-1" style="max-width: 500px;">
+        <i class="fa fa-search"></i>
+        <input 
+          type="text" 
+          id="loanSearch" 
+          name="q"
+          placeholder="Search Loan ID, Customer, Phone, Code..." 
+          value="<%= searchId || '' %>"
+          autocomplete="off"
+          style="width: 100%;"
+        >
+      </div>
+      <button class="admin-btn admin-btn-primary" type="submit" id="searchBtn">
+        <i class="fa fa-search"></i> Search
+      </button>
+      <% if (searchId) { %>
+        <a href="/admin/repayments?frequency=<%= currentFrequency %>&status=<%= currentStatus %>" class="admin-btn admin-btn-icon">Clear</a>
+      <% } %>
+    </form>
+
+    <div class="mt-3 w-100 d-flex gap-4 flex-wrap align-items-center">
+      <div class="d-flex flex-column gap-1">
+        <span class="text-xs text-muted fw-600">Frequency:</span>
+        <div class="admin-tabs d-flex gap-2">
+          <a href="/admin/repayments?frequency=ALL&status=<%= currentStatus %>&q=<%= searchId %>" class="admin-btn <%= currentFrequency === 'ALL' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">All</a>
+          <a href="/admin/repayments?frequency=DAILY&status=<%= currentStatus %>&q=<%= searchId %>" class="admin-btn <%= currentFrequency === 'DAILY' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">Daily</a>
+          <a href="/admin/repayments?frequency=WEEKLY&status=<%= currentStatus %>&q=<%= searchId %>" class="admin-btn <%= currentFrequency === 'WEEKLY' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">Weekly</a>
+          <a href="/admin/repayments?frequency=MONTHLY&status=<%= currentStatus %>&q=<%= searchId %>" class="admin-btn <%= currentFrequency === 'MONTHLY' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">Monthly</a>
+        </div>
+      </div>
+      
+      <div class="d-flex flex-column gap-1">
+        <span class="text-xs text-muted fw-600">Status:</span>
+        <div class="admin-tabs d-flex gap-2">
+          <a href="/admin/repayments?frequency=<%= currentFrequency %>&status=ALL&q=<%= searchId %>" class="admin-btn <%= currentStatus === 'ALL' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">All</a>
+          <a href="/admin/repayments?frequency=<%= currentFrequency %>&status=ACTIVE&q=<%= searchId %>" class="admin-btn <%= currentStatus === 'ACTIVE' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">Active</a>
+          <a href="/admin/repayments?frequency=<%= currentFrequency %>&status=OVERDUE&q=<%= searchId %>" class="admin-btn <%= currentStatus === 'OVERDUE' ? 'admin-btn-primary' : 'admin-btn-secondary' %>">Overdue</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-widget mb-4">
+  <div class="admin-widget-header">
+    <div class="admin-widget-title">
+      <i class="fa fa-list"></i>
+      <%= currentFrequency === 'ALL' ? 'All' : currentFrequency %> Repayments
+    </div>
+  </div>
+  
+  <div class="table-responsive">
+    <table class="admin-table w-100">
+      <thead>
+        <tr>
+          <th>CUSTOMER</th>
+          <th>LOAN</th>
+          <th>SCHEME</th>
+          <th><%= currentFrequency === 'DAILY' ? "TODAY'S PAYMENT" : (currentFrequency === 'WEEKLY' ? "WEEKLY PAYMENT" : (currentFrequency === 'MONTHLY' ? "MONTHLY PAYMENT" : "NEXT PAYMENT")) %></th>
+          <th>DUE DATE</th>
+          <th>OUTSTANDING</th>
+          <th>STATUS</th>
+          <th class="text-right">ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (portfolio && portfolio.length > 0) { %>
+          <% portfolio.forEach(p => { %>
+            <% 
+               const isDueToday = p.days_overdue === 0;
+               const isOverdue = p.days_overdue > 0;
+            %>
+            <tr>
+              <td>
+                <div class="fw-500 text-heading"><%= p.customer_name %></div>
+                <div class="text-sm text-primary fw-600"><%= p.customer_code %></div>
+              </td>
+              <td>
+                <div class="fw-700 text-primary"><%= p.loan_number %></div>
+                <div class="text-xs text-muted"><%= p.frequency %></div>
+              </td>
+              <td>
+                <div class="fw-500 text-heading"><%= p.scheme_name || 'Legacy Scheme' %></div>
+              </td>
+              <td>
+                <div class="fw-600 text-heading"><%= safeFormatINR(p.total_due) %></div>
+                <% if (p.penalty_amount > 0) { %>
+                  <div class="text-xs text-danger">+ <%= safeFormatINR(p.penalty_amount) %> penalty</div>
+                <% } %>
+              </td>
+              <td>
+                <div class="fw-500 <%= isOverdue ? 'text-danger' : (isDueToday ? 'text-warning' : 'text-body') %>">
+                  <%= safeFormatDate(p.next_payment_date) %>
+                </div>
+                <div class="text-xs <%= isOverdue ? 'text-danger fw-600' : 'text-muted' %>">
+                  <%= isDueToday ? 'Due Today' : (isOverdue ? p.days_overdue + ' days overdue' : '') %>
+                </div>
+              </td>
+              <td>
+                <div class="fw-600 text-heading"><%= safeFormatINR(p.outstanding_balance) %></div>
+              </td>
+              <td>
+                <% if (p.installment_status === 'PARTIAL') { %>
+                  <span class="admin-badge badge-warning">PARTIALLY PAID</span>
+                <% } else if (isOverdue || p.loan_status === 'OVERDUE') { %>
+                  <span class="admin-badge badge-danger">OVERDUE</span>
+                <% } else if (isDueToday) { %>
+                  <span class="admin-badge badge-warning">DUE TODAY</span>
+                <% } else { %>
+                  <span class="admin-badge badge-success">ACTIVE</span>
+                <% } %>
+              </td>
+              <td class="text-right">
+                <% if (hasPermission('repayments.record')) { %>
+                <button 
+                  type="button" 
+                  class="admin-btn admin-btn-primary py-1 px-3 btn-receive-payment" 
+                  data-loan-id="<%= p.loan_id %>"
+                  data-loan-number="<%= p.loan_number %>"
+                  data-installment-id="<%= p.installment_id %>"
+                  data-amount="<%= p.total_due %>"
+                >
+                  Receive Payment
+                </button>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <div class="admin-empty-state">
+                <i class="fa fa-check-circle" style="font-size: 2rem;"></i>
+                <div class="admin-empty-title mt-2">No Pending Repayments</div>
+                <div class="admin-empty-desc">There are no installments due matching your current filters.</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     TODAY'S TRANSACTIONS COMPONENT
+     ========================================================================== -->
+<%- include('partials/todays-transactions') %>
+
+<!-- ==========================================================================
+     STANDARD ADMIN RECEIVE PAYMENT MODAL (REUSING ADMIN DASHBOARD SYSTEM)
+     ========================================================================== -->
+
+<div id="paymentModalBackdrop" class="modal-backdrop fade" style="display: none; z-index: 1040;"></div>
+
+<div 
+  id="paymentWorkspaceModal" 
+  class="modal fade show" 
+  tabindex="-1" 
+  aria-hidden="true"
+  style="display: none; z-index: 1050;"
+  data-emi="<%= loan ? loan.emi_amount : 0 %>"
+  data-outstanding="<%= loan ? loan.outstanding_balance : 0 %>"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+      
+      <!-- Modal Header -->
+      <div class="modal-header border-bottom pb-3">
+        <h5 class="modal-title fw-700 text-heading d-flex align-items-center gap-2">
+          <i class="fa fa-shield-alt text-primary"></i> Receive Loan Repayment
+        </h5>
+        <button type="button" class="btn-close payment-modal-close-trigger" aria-label="Close"></button>
+      </div>
+
+      <!-- Modal Body (Two Column Layout using Admin Form Classes) -->
+      <div class="modal-body p-4">
+        <div class="row g-4">
+          
+          <!-- LEFT COLUMN: Loan & Customer Information -->
+          <div class="col-md-5">
+            
+            <!-- Customer Dossier Box -->
+            <div class="p-3 mb-3 bg-light rounded-3 border">
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-placeholder" id="workspaceCustAvatar">C</div>
+                <div style="min-width: 0;">
+                  <div class="fw-700 text-heading text-sm" id="workspaceCustName">Customer Name</div>
+                  <div class="text-xs text-primary fw-600" id="workspaceCustCode">CUS00000</div>
+                  <div class="text-xs text-muted" id="workspaceCustPhone">+91 0000000000</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loan Summary Box -->
+            <div class="p-3 mb-3 bg-light rounded-3 border">
+              <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <span class="text-xs text-muted">Loan Number</span>
+                <span class="fw-700 text-xs text-primary" id="workspaceLoanNumber">LN0000000</span>
+              </div>
+
+              <div class="row g-2 text-xs mb-2">
+                <div class="col-6">
+                  <div class="text-muted">Principal</div>
+                  <div class="fw-600 text-heading" id="workspacePrincipal">₹0</div>
+                </div>
+                <div class="col-6">
+                  <div class="text-muted">Interest Rate</div>
+                  <div class="fw-600 text-heading" id="workspaceRate">0%</div>
+                </div>
+                <div class="col-6">
+                  <div class="text-muted">Duration</div>
+                  <div class="fw-600 text-heading" id="workspaceDuration">0 Mos</div>
+                </div>
+                <div class="col-6">
+                  <div class="text-muted">Monthly EMI</div>
+                  <div class="fw-600 text-heading" id="workspaceEmi">₹0</div>
+                </div>
+              </div>
+
+              <hr class="my-2">
+
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-xs text-muted">Outstanding Balance</span>
+                <span class="fw-700 text-sm text-danger" id="workspaceOutstanding">₹0</span>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-xs text-muted">Total Paid</span>
+                <span class="fw-700 text-xs text-success" id="workspaceTotalPaid">₹0</span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="d-flex justify-content-between text-xs text-muted mt-2">
+                <span>Repayment Progress</span>
+                <span id="workspaceProgressText" class="fw-600 text-primary">0% Paid</span>
+              </div>
+              <div class="progress mt-1" style="height: 6px;">
+                <div class="progress-bar bg-success" id="workspaceProgressBar" role="progressbar" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Next EMI Box -->
+            <div class="p-3 bg-light rounded-3 border" id="workspaceNextEmiCard">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-xs text-muted">Next Installment</span>
+                <span class="fw-700 text-xs text-heading" id="workspaceInstNo"># 1</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-xs text-muted">Due Date</span>
+                <span class="fw-600 text-xs text-body" id="workspaceInstDueDate">N/A</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-xs text-muted">EMI Amount</span>
+                <span class="fw-700 text-sm text-heading" id="workspaceInstEmiAmount">₹0</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                <span class="text-xs text-muted">Status</span>
+                <span class="admin-badge badge-success" id="workspaceInstStatusBadge">PENDING</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: Repayment Entry Form -->
+          <div class="col-md-7">
+            
+            <form id="workspacePaymentForm" onsubmit="return false;">
+              <input type="hidden" id="workspaceLoanId" name="loanId">
+              <input type="hidden" id="workspaceInstallmentId" name="installmentId">
+
+              <!-- Amount Input -->
+              <div class="admin-form-group mb-3">
+                <label class="admin-form-label">Payment Amount (₹) <span class="text-danger">*</span></label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  min="1" 
+                  name="amount"
+                  id="workspacePaymentAmount" 
+                  class="admin-form-input fw-700 text-heading" 
+                  style="font-size: 1.1rem;" 
+                  placeholder="Enter amount"
+                  required
+                >
+              </div>
+
+              <!-- Payment Method Dropdown -->
+              <div class="admin-form-group mb-3">
+                <label class="admin-form-label">Payment Method <span class="text-danger">*</span></label>
+                <select id="workspacePaymentMethod" name="paymentMethod" class="admin-form-select" required>
+                  <option value="CASH">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  <option value="CHEQUE">Cheque</option>
+                </select>
+              </div>
+
+              <!-- Reference Number (Show/Hide) -->
+              <div class="admin-form-group mb-3" id="workspaceRefGroup">
+                <label class="admin-form-label">
+                  Reference Number 
+                  <span class="text-danger" id="workspaceRefAsterisk" style="display: none;">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="workspaceReferenceNumber" 
+                  name="referenceNumber"
+                  class="admin-form-input" 
+                  placeholder="Auto-generated (CASH + timestamp)"
+                >
+              </div>
+
+              <!-- Payment Date -->
+              <div class="admin-form-group mb-3">
+                <label class="admin-form-label">Payment Date <span class="text-danger">*</span></label>
+                <input 
+                  type="date" 
+                  id="workspacePaymentDate" 
+                  name="paymentDate"
+                  class="admin-form-input" 
+                  required
+                >
+              </div>
+
+              <!-- Remarks -->
+              <div class="admin-form-group mb-3">
+                <label class="admin-form-label">Remarks / Notes</label>
+                <textarea 
+                  id="workspaceRemarks" 
+                  name="remarks"
+                  class="admin-form-textarea" 
+                  rows="2" 
+                  placeholder="Add notes about this payment..."
+                ></textarea>
+              </div>
+
+              <!-- Live Calculation Box -->
+              <div class="p-3 mb-3 rounded-3 bg-light border">
+                <div class="d-flex justify-content-between text-xs py-1 border-bottom">
+                  <span class="text-muted">Outstanding Balance:</span>
+                  <span class="fw-600 text-heading" id="calcOutstanding">₹0</span>
+                </div>
+                <div class="d-flex justify-content-between text-xs py-1 border-bottom">
+                  <span class="text-muted">↓ minus Payment:</span>
+                  <span class="fw-700 text-primary" id="calcPaymentAmount">₹0</span>
+                </div>
+                <div class="d-flex justify-content-between text-xs py-1 pt-2 align-items-center">
+                  <span class="text-muted fw-600">= Remaining After:</span>
+                  <span class="fw-700 text-heading" id="calcRemainingAfter">₹0</span>
+                </div>
+                <div class="d-flex justify-content-between text-xs py-1 pt-1 align-items-center">
+                  <span class="text-muted">Payment Type:</span>
+                  <span class="admin-badge badge-info" id="calcTypeBadge" style="display: none;">Normal EMI</span>
+                </div>
+                <div class="text-xs mt-2 text-muted" id="calcNoticeText">Enter payment amount above.</div>
+              </div>
+
+              <!-- Action Submit Button -->
+              <button 
+                type="button" 
+                class="admin-btn admin-btn-primary w-100 py-2 fw-700" 
+                id="btnReceivePaymentInit"
+                style="font-size: 0.95rem;"
+              >
+                <i class="fa fa-check-circle me-1"></i> Receive Payment
+              </button>
+
+              <!-- Inline Confirmation Box -->
+              <div id="workspaceConfirmPanel" class="p-3 mt-3 rounded-3 bg-light border" style="display: none;">
+                <h5 class="fw-700 text-heading text-sm mb-2 d-flex align-items-center gap-2">
+                  <i class="fa fa-shield-alt text-primary"></i> Confirm Payment Receipt
+                </h5>
+                
+                <div class="d-grid gap-1 text-xs mb-3">
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Customer:</span>
+                    <span class="fw-600 text-heading" id="confirmCustName">Rahul Khan</span>
+                  </div>
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Loan Number:</span>
+                    <span class="fw-600 text-primary" id="confirmLoanNum">LN00000</span>
+                  </div>
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Amount:</span>
+                    <span class="fw-700 text-success" id="confirmAmount">₹0</span>
+                  </div>
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Method:</span>
+                    <span class="fw-600 text-heading" id="confirmMethod">CASH</span>
+                  </div>
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Reference:</span>
+                    <span class="fw-600 text-heading" id="confirmRef">N/A</span>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Payment Date:</span>
+                    <span class="fw-600 text-heading" id="confirmDate">Today</span>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="button" class="admin-btn admin-btn-secondary flex-1 py-2" id="btnCancelConfirm">Cancel</button>
+                  <button type="button" class="admin-btn admin-btn-primary flex-1 py-2 fw-700" id="btnSubmitConfirm">
+                    <i class="fa fa-check me-1"></i> Confirm & Submit
+                  </button>
+                </div>
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Custom Toast Container -->
+<div class="custom-toast-container"></div>
+
+<!-- Extracted Client script -->
+<script src="/js/admin/repayments.js"></script>
+

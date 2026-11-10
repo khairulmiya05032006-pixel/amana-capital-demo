@@ -1,0 +1,57 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="users-container">
+    <h1>Users List</h1>
+    <p class="subtitle">AMANATH CAPITAL User Management</p>
+
+    <% if (notice) { %>
+        <div class="notice-box">
+            <%= notice %>
+        </div>
+    <% } %>
+
+    <% if (users && users.length > 0) { %>
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User Code</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(user => { %>
+                    <tr class="<%= user.role === 'ADMIN' ? 'admin-row' : 'customer-row' %>">
+                        <td><%= user.id %></td>
+                        <td><strong><%= user.user_code %></strong></td>
+                        <td><%= user.email %></td>
+                        <td>
+                            <span class="badge <%= user.role === 'ADMIN' ? 'badge-admin' : 'badge-customer' %>">
+                                <%= user.role %>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status <%= user.account_status === 'ACTIVE' ? 'status-active' : 'status-inactive' %>">
+                                <%= user.account_status %>
+                            </span>
+                        </td>
+                        <td><%= user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never' %></td>
+                        <td><%= new Date(user.created_at).toLocaleDateString() %></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <div class="no-users">
+            <p>No users found in the database</p>
+        </div>
+    <% } %>
+
+    <div class="action-buttons">
+        <a href="/" class="btn btn-primary">Back to Home</a>
+    </div>
+</div>

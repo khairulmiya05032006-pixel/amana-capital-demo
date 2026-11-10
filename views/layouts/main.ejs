@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' | AMANATH CAPITAL' : 'AMANATH CAPITAL' %></title>
+  <meta name="description" content="Your Trusted Financial Parterner.">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/mobile-dashboard.css">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand">AMANAH CAPITAL</a>
+      <div class="nav-links">
+        <% if (typeof user !== 'undefined' && user) { %>
+          <% if (user.role === 'ADMIN') { %>
+            <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+            <a href="/admin/reports" class="nav-link">Reports</a>
+            <a href="/admin/customers" class="nav-link">Customers</a>
+            <form action="/auth/logout" method="POST" class="inline-form">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+              <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+            </form>
+          <% } else { %>
+            <a href="/customer/dashboard" class="nav-link">
+              <i class="fa-solid fa-building-columns" aria-hidden="true"></i> Home
+            </a>
+            <a href="/customer/loans" class="nav-link">
+              <i class="fa-solid fa-file-invoice" aria-hidden="true"></i> Loan
+            </a>
+            <a href="/customer/apply" class="nav-link">
+              <i class="fa-regular fa-calendar-check" aria-hidden="true"></i> Apply
+            </a>
+
+            <!-- Profile dropdown -->
+            <div class="nav-profile-wrap" id="navProfileWrap">
+              <button type="button" class="nav-profile-btn" id="navProfileBtn" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+                <span class="nav-avatar" aria-hidden="true">
+                  <i class="fa fa-user"></i>
+                </span>
+                <span class="nav-username"><%= user.email ? user.email.split('@')[0] : 'Account' %></span>
+                <i class="fa fa-chevron-down nav-caret" aria-hidden="true"></i>
+              </button>
+
+              <div class="nav-dropdown" id="navDropdown" role="menu" aria-label="Account options">
+                <a href="/customer/dashboard" class="nav-dropdown-item" role="menuitem">
+                  <i class="fa-solid fa-building-columns" aria-hidden="true"></i> Home
+                </a>
+                <a href="/customer/loans" class="nav-dropdown-item" role="menuitem">
+                  <i class="fa-solid fa-file-invoice" aria-hidden="true"></i> Loan
+                </a>
+                <a href="/customer/apply" class="nav-dropdown-item" role="menuitem">
+                  <i class="fa-regular fa-calendar-check" aria-hidden="true"></i> Apply
+                </a>
+                <a href="/customer/profile" class="nav-dropdown-item" role="menuitem">
+                  <i class="fa fa-user-circle" aria-hidden="true"></i> Profile
+                </a>
+                <div class="nav-dropdown-divider" role="separator"></div>
+                <form action="/auth/logout" method="POST">
+                  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                  <button type="submit" class="nav-dropdown-item nav-dropdown-logout" role="menuitem">
+                    <i class="fa fa-sign-out-alt" aria-hidden="true"></i> Logout
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% } %>
+        <% } else { %>
+          <a href="/auth/login" class="nav-link">Login</a>
+          <a href="/auth/register" class="btn btn-primary btn-sm">Register</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <script>
+  (function() {
+    var btn = document.getElementById('navProfileBtn');
+    var dropdown = document.getElementById('navDropdown');
+    var wrap = document.getElementById('navProfileWrap');
+    if (!btn || !dropdown) return;
+
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var isOpen = wrap.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (wrap && !wrap.contains(e.target)) {
+        wrap.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && wrap.classList.contains('open')) {
+        wrap.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.focus();
+      }
+    });
+  })();
+  </script>
+
+  <main class="main-content">
+    <% if (locals.currentPath !== '/auth/login' && locals.currentPath !== '/auth/register') { %>
+      <div class="container mt-4">
+        <%- include('../partials/messages') %>
+      </div>
+    <% } %>
+    <%- body -%>
+  </main>
+
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; <%= new Date().getFullYear() %> AMANAH CAPITAL. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

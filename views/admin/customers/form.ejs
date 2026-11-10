@@ -1,0 +1,112 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a href="/admin/customers" class="admin-btn admin-btn-secondary admin-btn-icon">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <div>
+      <h1 class="admin-page-title"><%= title %></h1>
+      <p class="admin-page-desc"><%= customer.id ? 'Update existing customer details' : 'Register a new customer profile' %></p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.error) { %>
+  <div class="admin-widget bg-danger-soft mb-4">
+    <span class="text-danger fw-600"><%= error %></span>
+  </div>
+<% } %>
+
+<div class="admin-widget">
+  <form action="<%= customer.id ? '/admin/customers/' + customer.id + '/update' : '/admin/customers' %>" method="POST">
+    
+    <h3 class="text-primary fw-600 mb-3" style="font-size: 1.1rem;">Personal Information</h3>
+    <div class="d-grid grid-cols-auto gap-4 mb-5">
+      <div class="admin-form-group">
+        <label class="admin-form-label">Full Name *</label>
+        <input type="text" name="full_name" value="<%= customer.full_name || '' %>" required class="admin-form-input">
+        <% if (locals.errors && errors.full_name) { %>
+          <span class="text-danger text-xs mt-1 d-block"><%= errors.full_name.msg %></span>
+        <% } %>
+      </div>
+      
+      <div class="admin-form-group">
+        <label class="admin-form-label">Email Address *</label>
+        <input type="email" name="email" value="<%= customer.email || '' %>" required class="admin-form-input">
+        <% if (locals.errors && errors.email) { %>
+          <span class="text-danger text-xs mt-1 d-block"><%= errors.email.msg %></span>
+        <% } %>
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">Phone Number *</label>
+        <input type="tel" name="phone" pattern="[6-9][0-9]{9}" title="Valid 10-digit Indian mobile number starting with 6-9" value="<%= customer.phone || '' %>" required class="admin-form-input">
+        <% if (locals.errors && errors.phone) { %>
+          <span class="text-danger text-xs mt-1 d-block"><%= errors.phone.msg %></span>
+        <% } %>
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">Date of Birth</label>
+        <input type="date" name="date_of_birth" value="<%= customer.date_of_birth || '' %>" class="admin-form-input">
+      </div>
+      
+      <div class="admin-form-group">
+        <label class="admin-form-label">Gender</label>
+        <select name="gender" class="admin-form-select">
+          <option value="">Select Gender</option>
+          <option value="MALE" <%= customer.gender === 'MALE' ? 'selected' : '' %>>Male</option>
+          <option value="FEMALE" <%= customer.gender === 'FEMALE' ? 'selected' : '' %>>Female</option>
+          <option value="OTHER" <%= customer.gender === 'OTHER' ? 'selected' : '' %>>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <h3 class="text-primary fw-600 mb-3" style="font-size: 1.1rem;">Address & Identity</h3>
+    <div class="d-grid grid-cols-auto gap-4 mb-5">
+      <div class="admin-form-group" style="grid-column: 1 / -1;">
+        <label class="admin-form-label">Residential Address</label>
+        <textarea name="address" rows="3" class="admin-form-textarea" style="resize: vertical;"><%= customer.address || '' %></textarea>
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">Aadhaar Number</label>
+        <input type="text" name="aadhaar_number" pattern="\d{12}" title="12-digit numeric Aadhaar number" value="<%= customer.aadhaar_number || '' %>" class="admin-form-input">
+        <% if (locals.errors && errors.aadhaar_number) { %>
+          <span class="text-danger text-xs mt-1 d-block"><%= errors.aadhaar_number.msg %></span>
+        <% } %>
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">PAN Number</label>
+        <input type="text" name="pan_number" pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}" title="Valid PAN format (e.g. ABCDE1234F)" style="text-transform: uppercase;" value="<%= customer.pan_number || '' %>" class="admin-form-input">
+        <% if (locals.errors && errors.pan_number) { %>
+          <span class="text-danger text-xs mt-1 d-block"><%= errors.pan_number.msg %></span>
+        <% } %>
+      </div>
+    </div>
+
+    <h3 class="text-primary fw-600 mb-3" style="font-size: 1.1rem;">Financial Profile</h3>
+    <div class="d-grid grid-cols-auto gap-4 mb-5">
+      <div class="admin-form-group">
+        <label class="admin-form-label">Occupation</label>
+        <input type="text" name="occupation" value="<%= customer.occupation || '' %>" class="admin-form-input">
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">Monthly Income (₹)</label>
+        <input type="number" step="0.01" name="monthly_income" value="<%= customer.monthly_income || '' %>" class="admin-form-input">
+        <% if (locals.errors && errors.monthly_income) { %>
+          <span class="text-danger text-xs mt-1 d-block"><%= errors.monthly_income.msg %></span>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-3 mt-4">
+      <a href="<%= customer.id ? '/admin/customers/' + customer.id : '/admin/customers' %>" class="admin-btn admin-btn-secondary">Cancel</a>
+      <button type="submit" class="admin-btn admin-btn-primary"><%= customer.id ? 'Save Changes' : 'Create Customer' %></button>
+    </div>
+
+  </form>
+</div>

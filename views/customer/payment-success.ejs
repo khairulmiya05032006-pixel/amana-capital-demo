@@ -1,0 +1,27 @@
+<% layout('layouts/main') %>
+
+<div class="dashboard-app-container" style="max-width: 600px; margin: 40px auto;">
+  <div class="glass-panel" style="padding: 40px 24px; text-align: center;">
+    <div style="width: 80px; height: 80px; background: rgba(22, 163, 74, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+      <i class="fa-solid fa-check" style="font-size: 40px; color: #16A34A;"></i>
+    </div>
+    
+    <h1 style="color: #16A34A; margin-bottom: 8px;">Payment Successful!</h1>
+    <p style="color: var(--text-secondary); margin-bottom: 32px;">Your EMI payment has been processed successfully. A receipt has been sent to your email.</p>
+    
+    <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; margin-bottom: 32px; display: inline-block; text-align: left;">
+      <div style="display: flex; gap: 24px; margin-bottom: 8px;">
+        <span style="color: var(--text-secondary);">Transaction ID</span>
+        <span style="font-family: monospace; font-weight: 500;"><%= txnid %></span>
+      </div>
+      <div style="display: flex; gap: 24px;">
+        <span style="color: var(--text-secondary);">Date</span>
+        <span style="font-weight: 500;"><%= new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+      </div>
+    </div>
+    
+    <div>
+      <a href="/customer/loans/<%= loanId %>" class="btn btn-primary" style="padding: 12px 32px;">Back to Loan Details</a>
+    </div>
+  </div>
+</div>

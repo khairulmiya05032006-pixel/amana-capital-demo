@@ -1,0 +1,155 @@
+# ============================================================
+# AMANAH CAPITAL - PRODUCTION DEPLOYMENT & GITIGNORE RULES
+# ============================================================
+
+# ============================================================
+# ENVIRONMENT & SECRETS (NEVER COMMIT)
+# ============================================================
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# ============================================================
+# NODE & PACKAGES
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ============================================================
+# LOGS & TRACES
+# ============================================================
+logs/
+*.log
+npm-debug.log*
+error.log
+combined.log
+
+# ============================================================
+# RUNTIME, CACHE & TEMPORARY FILES
+# ============================================================
+tmp/
+temp/
+.cache/
+coverage/
+.nyc_output/
+scratch/
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# ============================================================
+# DATABASE BACKUPS, DUMPS & RAW DATA (CRITICAL SECURITY)
+# ============================================================
+database/backups/
+database/dumps/
+database/tmp/
+database/test/
+database/dev/
+scripts/maintenance/database/backups/
+**/backups/**
+*.sql.gz
+*.dump
+*.bak
+*.sql.bak
+*_db.sql
+backup_*.sql
+
+# Specific database dump files
+lmzudyob_micofinance_fintech_db.sql
+
+# ============================================================
+# SPREADSHEETS, SCREENSHOTS & DEBUG DUMPS
+# ============================================================
+*.xlsx
+*.xls
+*.csv
+after_login.*
+login_page.*
+*.png.bak
+
+# Exclude root images/html debug artifacts but keep public/ assets
+/*.png
+/*.jpg
+/*.jpeg
+/*.html
+!public/
+
+# ============================================================
+# TEST RUNNERS, DEBUG SCRIPTS & REPRO SCRIPTS
+# ============================================================
+tests/
+test/
+__tests__/
+test-*.js
+*.test.js
+*.spec.js
+test_*.cjs
+test_*.js
+crack*.js
+crack*.cjs
+fix_*.js
+fix_*.cjs
+reset_*.js
+reset_*.cjs
+update_*.cjs
+alter_db.js
+check_*.js
+inspect-*.js
+inspect_*.js
+migrate-workflow.js
+verify-workflow.js
+test*.xlsx
+dl.xlsx
+
+scripts/dev/
+scripts/test/
+scripts/debug/
+scripts/tests/
+
+# ============================================================
+# AI PROMPTS, PLANS & TASK FILES
+# ============================================================
+implementation_plan.md
+task.md
+walkthrough.md
+implementtation plan/
+"implementtation plan/"
+"implementtation plan/*"
+*-prompt.md
+loan-schemes-feature-prompt.md
+notification_report.md
+
+# ============================================================
+# GENERATED ARTIFACTS, EXPORTS & STORAGE
+# ============================================================
+reports/generated/
+exports/
+generated/
+dist/
+build/
+storage/*
+!storage/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
+
+# ============================================================
+# OS & IDE
+# ============================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.local

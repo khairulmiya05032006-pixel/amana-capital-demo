@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS admin_account (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    balance DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS admin_account_transactions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    transaction_type ENUM('CREDIT', 'DEBIT') NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    balance_after DECIMAL(15,2) NOT NULL,
+    reference VARCHAR(50),
+    description VARCHAR(255),
+    created_by BIGINT UNSIGNED,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO admin_account (balance) SELECT 1000.00 WHERE NOT EXISTS (SELECT 1 FROM admin_account);

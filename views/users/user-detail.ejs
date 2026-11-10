@@ -1,0 +1,60 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="user-detail-container">
+    <h1>User Details</h1>
+
+    <% if (notice) { %>
+        <div class="notice-box">
+            <%= notice %>
+        </div>
+    <% } %>
+
+    <% if (user) { %>
+        <div class="user-card">
+            <div class="user-header <%= user.role === 'ADMIN' ? 'admin-header' : 'customer-header' %>">
+                <h2><%= user.user_code %></h2>
+                <span class="badge <%= user.role === 'ADMIN' ? 'badge-admin' : 'badge-customer' %>">
+                    <%= user.role %>
+                </span>
+            </div>
+
+            <div class="user-body">
+                <div class="detail-row">
+                    <label>ID:</label>
+                    <span><%= user.id %></span>
+                </div>
+                <div class="detail-row">
+                    <label>Email:</label>
+                    <span><%= user.email %></span>
+                </div>
+                <div class="detail-row">
+                    <label>Account Status:</label>
+                    <span class="status <%= user.account_status === 'ACTIVE' ? 'status-active' : 'status-inactive' %>">
+                        <%= user.account_status %>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <label>Last Login:</label>
+                    <span><%= user.last_login ? new Date(user.last_login).toLocaleString() : 'Never' %></span>
+                </div>
+                <div class="detail-row">
+                    <label>Created At:</label>
+                    <span><%= Number(new Date(user.created_at)).toLocaleString() %></span>
+                </div>
+                <div class="detail-row">
+                    <label>Updated At:</label>
+                    <span><%= Number(new Date(user.updated_at)).toLocaleString() %></span>
+                </div>
+            </div>
+        </div>
+    <% } else { %>
+        <div class="error-message">
+            <p>User not found</p>
+        </div>
+    <% } %>
+
+    <div class="action-buttons">
+        <a href="/users" class="btn btn-secondary">Back to Users</a>
+        <a href="/" class="btn btn-primary">Home</a>
+    </div>
+</div>

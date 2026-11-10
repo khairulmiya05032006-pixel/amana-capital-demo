@@ -1,0 +1,433 @@
+/* ============================================
+   LOAN DETAILS PAGE — Mobile-First Responsive
+   customer/loan-details.css
+   ============================================ */
+
+/* ─── Page wrapper ─── */
+.ld-page {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ─── Header ─── */
+.ld-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.ld-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-inverse);
+  text-decoration: none;
+  background: var(--surface-900);
+  border: 1px solid var(--surface-200);
+  border-radius: 8px;
+  padding: 8px 14px;
+  min-height: 44px;
+  width: 60%;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ld-back-btn:hover {
+  background: var(--primary-50);
+  color: var(--primary-600);
+}
+
+.ld-loan-number {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.ld-loan-sub {
+  font-size: 0.8rem;
+  color: var(--surface-800);
+  margin: 0;
+}
+
+/* ─── Summary Cards ─── */
+.ld-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.ld-kpi-card {
+  background: var(--color-card);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid var(--card-accent, #0D1B2A);
+}
+
+.ld-kpi-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.ld-kpi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ld-kpi-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--surface-800);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ld-kpi-value {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* ─── Section Panels ─── */
+.ld-section {
+  background: var(--color-card);
+  border-radius: 14px;
+  padding: 20px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.25rem;
+}
+
+.ld-section-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 16px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--surface-200);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── EMI Desktop Table ─── */
+.ld-emi-table-wrap {
+  display: none; /* hidden on mobile */
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--surface-200);
+}
+
+/* ─── EMI Mobile Cards ─── */
+.ld-emi-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ld-emi-card {
+  background: var(--surface-50);
+  border: 1px solid var(--surface-200);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.ld-emi-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ld-emi-no {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+}
+
+.ld-emi-rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.ld-emi-row-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ld-emi-row-label {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.ld-emi-row-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var( --secondary-500);
+}
+
+.ld-pay-btn {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  text-align: center;
+  background: var(--secondary-600);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  line-height: 44px;
+  transition: opacity 0.15s;
+}
+
+.ld-pay-btn:hover {
+  opacity: 0.9;
+  color: #fff;
+}
+
+/* ─── Status Badges ─── */
+.ld-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ld-badge-paid {
+  background: rgba(22, 163, 74, 0.12);
+  color: #16A34A;
+}
+
+.ld-badge-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #D97706;
+}
+
+.ld-badge-overdue {
+  background: rgba(220, 38, 38, 0.12);
+  color: #DC2626;
+}
+
+/* ─── Recent Payments ─── */
+.ld-payments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ld-payment-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--surface-50);
+  border: 1px solid var(--surface-200);
+  border-left: 4px solid #16A34A;
+  border-radius: 10px;
+  gap: 10px;
+}
+
+.ld-payment-amount {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #16A34A;
+}
+
+.ld-payment-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.ld-payment-date {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.ld-payment-ref {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  background: var(--surface-100);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+/* ─── Transaction Ledger ─── */
+.ld-ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ld-ledger-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--surface-50);
+  border: 1px solid var(--surface-200);
+  border-radius: 10px;
+  gap: 10px;
+}
+
+.ld-ledger-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ld-ledger-type {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.ld-ledger-ref {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.ld-ledger-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.ld-ledger-amount {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.ld-ledger-amount.credit { color: #16A34A; }
+.ld-ledger-amount.debit  { color: #DC2626; }
+
+.ld-ledger-balance {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.ld-ledger-date {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+/* ─── Empty State ─── */
+.ld-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ═══════════════════════════════════════════
+   TABLET  ≥768px
+═══════════════════════════════════════════ */
+@media (min-width: 768px) {
+  .ld-page {
+    padding: 1.5rem;
+  }
+
+  .ld-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .ld-back-btn {
+    width: auto;
+    min-height: 38px;
+  }
+
+  .ld-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   DESKTOP  ≥992px
+═══════════════════════════════════════════ */
+@media (min-width: 992px) {
+  .ld-page {
+    padding: 2rem;
+  }
+
+  .ld-loan-number {
+    font-size: 1.5rem;
+  }
+
+  .ld-summary-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Desktop layout: EMI left, activity right */
+  .ld-content-row {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  /* Show table, hide cards on desktop */
+  .ld-emi-table-wrap {
+    display: block;
+  }
+
+  .ld-emi-cards {
+    display: none;
+  }
+
+  /* Pay Now — small inside table on desktop */
+  .ld-pay-btn-sm {
+    display: inline-flex !important;
+  }
+
+  .ld-section {
+    padding: 24px;
+  }
+
+  .ld-section-title {
+    font-size: 1.05rem;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   LARGE DESKTOP  ≥1200px
+═══════════════════════════════════════════ */
+@media (min-width: 1200px) {
+  .ld-content-row {
+    grid-template-columns: 1fr 420px;
+  }
+}

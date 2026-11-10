@@ -1,0 +1,14 @@
+<% layout('layouts/main') %>
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card glass-panel" style="max-width: 500px; width: 100%; text-align: center; padding: var(--spacing-xl);">
+        <div style="font-size: 4rem; color: var(--error); margin-bottom: var(--spacing-sm);">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h1 class="page-title" style="margin-bottom: var(--spacing-sm)">Action Not Allowed</h1>
+        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg); font-size: 1.1rem;">
+            <%= typeof message !== 'undefined' ? message : 'Invalid request.' %>
+        </p>
+        <a href="/customer/dashboard" class="btn btn-primary btn-full">Return to Dashboard</a>
+    </div>
+</div>

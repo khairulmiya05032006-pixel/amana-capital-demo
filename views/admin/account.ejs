@@ -1,0 +1,383 @@
+<% layout('layouts/adminLayout') %>
+
+<% 
+  const safeFormatINR = typeof formatINR === 'function' ? formatINR : (v) => '₹' + Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const safeFormatDate = typeof formatDate === 'function' ? formatDate : (d) => d ? new Date(d).toLocaleString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+  const currentBal = Number(balance || available_balance || 0);
+  const depositsTotal = Number(typeof totalDeposits !== 'undefined' ? totalDeposits : (typeof totalCollected !== 'undefined' ? totalCollected : 0));
+  const monthTotal = Number(typeof thisMonthDeposits !== 'undefined' ? thisMonthDeposits : 0);
+  const txCount = Number(typeof totalTransactions !== 'undefined' ? totalTransactions : (transactions ? transactions.length : 0));
+%>
+
+<!-- Header & Title -->
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Admin Account & Treasury</h1>
+    <p class="admin-page-desc">Manage company lending capital, top up operational funds, and view deposit transaction history.</p>
+  </div>
+  <button 
+    type="button" 
+    class="admin-btn admin-btn-primary btn-open-add-funds-modal" 
+  >
+    <i class="fa fa-plus-circle"></i> + Add Funds
+  </button>
+</div>
+
+
+
+
+<!-- Summary Cards (Standard Dashboard KPI Grid) -->
+<div class="admin-kpi-grid">
+  
+  <!-- 1. Available Lending Capital -->
+  <div class="admin-kpi-card" style="border-left: 4px solid #14B8A6;">
+    <div class="admin-kpi-icon-wrap icon-blue">
+      <!-- <i class="fa fa-wallet"></i> -->
+       <i class="fa-solid fa-building-columns icon-blue"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label">Available Lending Capital</span>
+      <span class="admin-kpi-value" id="mainAccountBalance" style="color: #14B8A6; font-size: 1.25rem;"><%= safeFormatINR(currentBal) %></span>
+    </div>
+  </div>
+
+  <!-- 2. Total Deposits -->
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-green">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label text-success">Total Deposits</span>
+      <span class="admin-kpi-value"><%= safeFormatINR(depositsTotal) %></span>
+    </div>
+  </div>
+
+  <!-- 3. Funds Added This Month -->
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-amber">
+      <i class="fa fa-calendar-alt"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label text-warning">Funds Added This Month</span>
+      <span class="admin-kpi-value"><%= safeFormatINR(monthTotal) %></span>
+    </div>
+  </div>
+
+  <!-- 4. Total Transactions -->
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-icon-wrap icon-purple">
+      <i class="fa fa-history"></i>
+    </div>
+    <div class="admin-kpi-details">
+      <span class="admin-kpi-label" style="color: #9333EA;">Total Transactions</span>
+      <span class="admin-kpi-value"><%= txCount %> Transactions</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Recent Transactions Directory -->
+<div class="admin-widget">
+  <div class="admin-widget-header pb-3 mb-3 border-bottom d-flex justify-content-between align-items-center">
+    <div>
+      <h3 class="admin-widget-title m-0">
+        <i class="fa fa-history text-primary"></i> Recent Transactions & Treasury Deposits
+      </h3>
+      <span class="text-xs text-muted fw-600">Showing latest deposits and account entries</span>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="/admin/account/transactions/export" class="btn btn-sm btn-outline-primary">
+        <i class="fa fa-file-csv"></i> Export CSV
+      </a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="admin-table w-100">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Funding Source</th>
+          <th>Payment Method</th>
+          <th>Reference Number</th>
+          <th>Added By</th>
+        </tr>
+      </thead>
+      <tbody id="accountTxTableBody">
+        <% if (transactions && transactions.length > 0) { %>
+          <% transactions.forEach((tx, index) => { %>
+            <% 
+              const isCredit = tx.transaction_type === 'CREDIT' || tx.transaction_type === 'FUND_DEPOSIT';
+              const source = tx.funding_source || (tx.description ? tx.description.slice(0, 30) : 'General Fund');
+              const method = (tx.payment_method || 'CASH').replace('_', ' ');
+              const ref = tx.reference_number || tx.reference || 'N/A';
+            %>
+            <tr class="tx-row <%= index >= 50 ? 'd-none' : '' %>">
+              <td class="text-xs text-body"><%= safeFormatDate(tx.created_at) %></td>
+              <td>
+                <% if (isCredit) { %>
+                  <span class="admin-badge badge-success"><i class="fa fa-plus text-xs me-1"></i> CREDIT</span>
+                <% } else { %>
+                  <span class="admin-badge badge-danger"><i class="fa fa-minus text-xs me-1"></i> DEBIT</span>
+                <% } %>
+              </td>
+              <td class="fw-700 text-sm <%= isCredit ? 'text-success' : 'text-danger' %>">
+                <%= isCredit ? '+' : '-' %><%= safeFormatINR(tx.amount) %>
+              </td>
+              <td class="fw-600 text-xs text-heading"><%= source %></td>
+              <td>
+                <span class="admin-badge badge-secondary text-xs" style="text-transform: capitalize;">
+                  <%= method %>
+                </span>
+              </td>
+              <td class="text-xs font-monospace text-heading"><%= ref %></td>
+              <td class="text-xs text-muted"><%= tx.admin_email || tx.admin_name || ('Admin #' + tx.created_by) %></td>
+            </tr>
+          <% }) %>
+          <% if (transactions.length > 50) { %>
+            <tr id="showMoreRow">
+              <td colspan="7" class="text-center py-3">
+                <button type="button" id="showMoreTxBtn" class="btn btn-sm btn-light border fw-600" onclick="showMoreTx()">
+                  Show More (<%= transactions.length - 50 %> remaining)
+                </button>
+              </td>
+            </tr>
+          <% } %>
+        <% } else { %>
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">
+              <div class="admin-empty-state">
+                <i class="fa fa-history"></i>
+                <div class="admin-empty-title">No transactions recorded</div>
+                <div class="admin-empty-desc">No capital injection or deposit transactions logged yet.</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     STANDARD ADMIN ADD FUNDS MODAL (REUSING ADMIN DASHBOARD SYSTEM)
+     ========================================================================== -->
+
+<div id="addFundsModalBackdrop" class="modal-backdrop fade" style="display: none; z-index: 1040;"></div>
+
+<div 
+  id="addFundsModal" 
+  class="modal fade show" 
+  tabindex="-1" 
+  aria-hidden="true" 
+  style="display: none; z-index: 1050;"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+      
+      <!-- Modal Header -->
+      <div class="modal-header border-bottom pb-3">
+        <h5 class="modal-title fw-700 text-heading d-flex align-items-center gap-2">
+          <i class="fa fa-plus-circle text-primary"></i> Add Funds to Lending Capital
+        </h5>
+        <button type="button" class="btn-close btn-close-add-funds-modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body p-4">
+        
+        <form id="addFundsForm" data-current-balance="<%= currentBal %>" onsubmit="return false;">
+          
+          <!-- Current Balance Box -->
+          <div class="p-3 rounded-3 mb-3 bg-light border d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-xs text-muted fw-600 text-uppercase">CURRENT LENDING CAPITAL</div>
+              <div class="fw-700 text-primary text-sm" style="font-size: 1.15rem;"><%= safeFormatINR(currentBal) %></div>
+            </div>
+            <i class="fa fa-wallet text-primary" style="font-size: 1.5rem;"></i>
+          </div>
+
+          <!-- Deposit Amount -->
+          <div class="admin-form-group mb-3">
+            <label class="admin-form-label">Deposit Amount (₹) <span class="text-danger">*</span></label>
+            <input 
+              type="number" 
+              step="0.01" 
+              min="1" 
+              id="fundAmountInput" 
+              name="amount"
+              class="admin-form-input fw-700 text-heading" 
+              style="font-size: 1.1rem;" 
+              placeholder="e.g. 500000"
+              required
+            >
+          </div>
+
+          <!-- Funding Source & Payment Method Grid -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="admin-form-label">Funding Source <span class="text-danger">*</span></label>
+              <select id="fundSourceSelect" name="fundingSource" class="admin-form-select" required>
+                <option value="Owner Investment">Owner Investment</option>
+                <option value="Bank Deposit">Bank Deposit</option>
+                <option value="Cash Deposit">Cash Deposit</option>
+                <option value="Investor Funding">Investor Funding</option>
+                <option value="Branch Transfer">Branch Transfer</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="admin-form-label">Payment Method <span class="text-danger">*</span></label>
+              <select id="fundMethodSelect" name="paymentMethod" class="admin-form-select" required>
+                <option value="CASH">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="BANK_TRANSFER">Bank Transfer</option>
+                <option value="CHEQUE">Cheque</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Reference Number (Show/Hide) -->
+          <div class="admin-form-group mb-3" id="fundRefGroup">
+            <label class="admin-form-label">
+              Reference Number 
+              <span class="text-danger" id="fundRefAsterisk" style="display: none;">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="fundRefInput" 
+              name="referenceNumber"
+              class="admin-form-input" 
+              placeholder="Auto-generated (CASH + timestamp)"
+            >
+          </div>
+
+          <!-- Deposit Date -->
+          <div class="admin-form-group mb-3">
+            <label class="admin-form-label">Deposit Date <span class="text-danger">*</span></label>
+            <input 
+              type="date" 
+              id="fundDateInput" 
+              name="depositDate"
+              class="admin-form-input" 
+              value="<%= new Date().toISOString().split('T')[0] %>"
+              required
+            >
+          </div>
+
+          <!-- Description -->
+          <div class="admin-form-group mb-3">
+            <label class="admin-form-label">Description / Remarks</label>
+            <textarea 
+              id="fundDescInput" 
+              name="description"
+              class="admin-form-textarea" 
+              rows="2" 
+              placeholder="e.g. Quarterly capital investment for loan expansion..."
+            ></textarea>
+          </div>
+
+          <!-- Live Balance Preview Box -->
+          <div class="p-3 mb-3 rounded-3 bg-light border">
+            <div class="text-xs text-muted fw-700 text-uppercase mb-2"><i class="fa fa-calculator me-1 text-primary"></i> Live Balance Calculation</div>
+            
+            <div class="d-flex justify-content-between text-xs py-1 border-bottom">
+              <span class="text-muted">Current Balance:</span>
+              <span class="fw-600 text-heading" id="previewCurrentBalance"><%= safeFormatINR(currentBal) %></span>
+            </div>
+
+            <div class="d-flex justify-content-between text-xs py-1 border-bottom">
+              <span class="text-muted">+ Deposit Amount:</span>
+              <span class="fw-700 text-primary" id="previewDepositAmount">₹0.00</span>
+            </div>
+
+            <div class="d-flex justify-content-between text-xs py-1 pt-2 align-items-center">
+              <span class="text-muted fw-600">= New Balance:</span>
+              <span class="fw-700 text-sm text-success" id="previewNewBalance"><%= safeFormatINR(currentBal) %></span>
+            </div>
+          </div>
+
+          <!-- Initial Submit Button -->
+          <button 
+            type="button" 
+            class="admin-btn admin-btn-primary w-100 py-2 fw-700" 
+            id="btnInitAddFunds"
+            style="font-size: 0.95rem;"
+          >
+            <i class="fa fa-plus-circle me-1"></i> Add Funds to Account
+          </button>
+
+          <!-- Embedded Confirmation Box -->
+          <div id="addFundsConfirmPanel" class="p-3 mt-3 rounded-3 bg-light border" style="display: none;">
+            <h5 class="fw-700 text-heading text-sm mb-2 d-flex align-items-center gap-2">
+              <i class="fa fa-shield-alt text-primary"></i> Confirm Deposit into Treasury
+            </h5>
+            
+            <div class="d-grid gap-1 text-xs mb-3">
+              <div class="d-flex justify-content-between border-bottom pb-1">
+                <span class="text-muted">Deposit Amount:</span>
+                <span class="fw-700 text-success" id="confirmFundAmount">₹0</span>
+              </div>
+              <div class="d-flex justify-content-between border-bottom pb-1">
+                <span class="text-muted">Funding Source:</span>
+                <span class="fw-600 text-heading" id="confirmFundSource">Owner Investment</span>
+              </div>
+              <div class="d-flex justify-content-between border-bottom pb-1">
+                <span class="text-muted">Payment Method:</span>
+                <span class="fw-600 text-heading" id="confirmFundMethod">CASH</span>
+              </div>
+              <div class="d-flex justify-content-between border-bottom pb-1">
+                <span class="text-muted">Reference:</span>
+                <span class="fw-600 text-heading" id="confirmFundRef">N/A</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Deposit Date:</span>
+                <span class="fw-600 text-heading" id="confirmFundDate">Today</span>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="button" class="admin-btn admin-btn-secondary flex-1 py-2" id="btnCancelFundConfirm">Cancel</button>
+              <button type="button" class="admin-btn admin-btn-primary flex-1 py-2 fw-700" id="btnSubmitFundConfirm">
+                <i class="fa fa-check me-1"></i> Confirm & Submit
+              </button>
+            </div>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Custom Toast Container -->
+<div class="custom-toast-container"></div>
+
+<!-- Extracted Client script -->
+<script src="/js/admin/account.js"></script>
+
+<script>
+window.showMoreTx = function() {
+  const allRows = Array.from(document.querySelectorAll('#accountTxTableBody .tx-row'));
+  const hiddenRows = allRows.filter(row => row.classList.contains('d-none'));
+  
+  // Show up to 100 rows
+  const rowsToShow = hiddenRows.slice(0, 100);
+  rowsToShow.forEach(row => row.classList.remove('d-none'));
+  
+  const remainingCount = hiddenRows.length - rowsToShow.length;
+  const showMoreBtn = document.getElementById('showMoreTxBtn');
+  const showMoreRow = document.getElementById('showMoreRow');
+  
+  if (remainingCount > 0) {
+    if (showMoreBtn) showMoreBtn.innerText = `Show More (${remainingCount} remaining)`;
+  } else {
+    if (showMoreRow) showMoreRow.classList.add('d-none');
+  }
+};
+</script>

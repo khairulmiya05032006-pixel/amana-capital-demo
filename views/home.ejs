@@ -1,0 +1,467 @@
+﻿<% layout('layouts/landing') %>
+
+<!-- ========================================================
+     HEADER
+     ======================================================== -->
+<header class="lp-header" id="lpHeader" role="banner">
+  <div class="lp-container">
+    <nav class="lp-nav" aria-label="Main navigation">
+      <!-- Logo -->
+      <a href="/" class="lp-logo" aria-label="Amanah Capital — Home">
+        <img
+          src="/brand-logo/AMANATH_CAPITAL_Logo-removebg-preview.png"
+          alt="Amanah Capital shield logo"
+          width="44" height="44"
+        >
+        <div class="lp-logo-text">
+          <span>AMANAH</span>
+          <span>CAPITAL</span>
+        </div>
+      </a>
+
+      <!-- Desktop right -->
+      <div class="lp-nav-right">
+        <a href="/auth/login" class="btn-gold" id="navLoginBtn">
+          <i class="fa fa-user" aria-hidden="true"></i>
+          Customer Login
+        </a>
+      </div>
+
+      <!-- Hamburger -->
+      <button class="lp-hamburger" id="lpHamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="lpMobileMenu">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="lp-mobile-menu" id="lpMobileMenu" role="dialog" aria-label="Mobile navigation">
+  <a href="/auth/login" class="btn-gold">
+    <i class="fa fa-user" aria-hidden="true"></i> Customer Login
+  </a>
+</div>
+
+
+<!-- ========================================================
+     HERO SECTION
+     ======================================================== -->
+<section class="lp-hero" id="hero" aria-label="Hero">
+  <div class="lp-container">
+    <div class="lp-hero-inner">
+
+      <!-- Left -->
+      <div class="lp-hero-left">
+        <span class="lp-hero-eyebrow">Financial Solutions You Can Trust</span>
+        <h1 class="lp-hero-h1">
+          Empowering Lives.<br>
+          <em>Building Futures.</em>
+        </h1>
+        <p class="lp-hero-desc">
+          Amanah Capital provides flexible and transparent financing
+          solutions that help individuals and businesses grow
+          with confidence and dignity.
+        </p>
+        <div class="lp-hero-actions">
+          <a href="/auth/register" class="btn-gold" id="heroApplyBtn">
+            Apply for a Loan &nbsp;&rarr;
+          </a>
+          <a href="#loan-solutions" class="btn-outline-hero" id="heroLearnBtn">
+            Learn More &nbsp;&rarr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Right — Brand visual -->
+      <div class="lp-hero-right">
+        <div class="lp-hero-brand-card">
+          <img
+            src="/brand-logo/AMANATH_CAPITAL_Logo-removebg-preview.png"
+            alt="Amanah Capital"
+            class="lp-hero-brand-logo"
+            width="120" height="120"
+          >
+          <p class="lp-hero-tagline">Smart Financing. Stronger Futures.</p>
+
+          <div class="lp-hero-card-stats">
+            <div class="lp-hero-stat-item">
+              <div class="lp-hero-stat-label">Founded</div>
+              <div class="lp-hero-stat-val">2026</div>
+            </div>
+            <div class="lp-hero-stat-item">
+              <div class="lp-hero-stat-label">Loan Types</div>
+              <div class="lp-hero-stat-val">3+</div>
+            </div>
+            <div class="lp-hero-stat-item">
+              <div class="lp-hero-stat-label">Support</div>
+              <div class="lp-hero-stat-val">24 / 7</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     TRUST METRICS
+     ======================================================== -->
+<section class="lp-trust" aria-label="Trust metrics">
+  <div class="lp-container">
+    <div class="lp-trust-card" role="list">
+
+      <div class="lp-trust-item" role="listitem">
+        <div class="lp-trust-icon" aria-hidden="true">
+          <i class="fa fa-users"></i>
+        </div>
+        <div class="lp-trust-title">Happy Customers</div>
+        <p class="lp-trust-desc">We are proud to serve<br>thousands of customers.</p>
+      </div>
+
+      <div class="lp-trust-item" role="listitem">
+        <div class="lp-trust-icon" aria-hidden="true">
+          <i class="fa fa-wallet"></i>
+        </div>
+        <div class="lp-trust-title">Loans Disbursed</div>
+        <p class="lp-trust-desc">Empowering individuals<br>and small businesses.</p>
+      </div>
+
+      <div class="lp-trust-item" role="listitem">
+        <div class="lp-trust-icon" aria-hidden="true">
+          <i class="fa fa-clock"></i>
+        </div>
+        <div class="lp-trust-title">On-time Repayment</div>
+        <p class="lp-trust-desc">High repayment rate<br>built on trust.</p>
+      </div>
+
+      <div class="lp-trust-item" role="listitem">
+        <div class="lp-trust-icon" aria-hidden="true">
+          <i class="fa fa-handshake"></i>
+        </div>
+        <div class="lp-trust-title">Active Loan Officers</div>
+        <p class="lp-trust-desc">Dedicated professionals<br>ready to help you.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     LOAN SOLUTIONS
+     ======================================================== -->
+<section class="lp-section" id="loan-solutions" aria-labelledby="loanSolutionsHeading">
+  <div class="lp-container">
+    <div class="lp-section-head-center">
+      <span class="lp-section-label">Our Loan Solutions</span>
+      <h2 class="lp-section-h2" id="loanSolutionsHeading">Financial Support for Every Need</h2>
+      <p class="lp-section-sub">Choose a loan that fits your goal and repay in a way that suits you.</p>
+    </div>
+
+    <div class="lp-loans">
+
+      <!-- Daily -->
+      <article class="lp-loan-card" aria-label="Daily Loans">
+        <div class="lp-loan-icon" aria-hidden="true">
+          <i class="fa fa-calendar-day"></i>
+        </div>
+        <h3 class="lp-loan-title">Daily Loans</h3>
+        <p class="lp-loan-desc">Short-term loans with daily repayments. Perfect for working capital needs.</p>
+        <ul class="lp-loan-features" aria-label="Daily Loan features">
+          <li>Flexible daily repayment</li>
+          <li>Quick approval</li>
+          <li>Minimal documentation</li>
+        </ul>
+      </article>
+
+      <!-- Weekly -->
+      <article class="lp-loan-card featured" aria-label="Weekly Loans">
+        <div class="lp-loan-icon" aria-hidden="true">
+          <i class="fa fa-calendar-week"></i>
+        </div>
+        <h3 class="lp-loan-title">Weekly Loans</h3>
+        <p class="lp-loan-desc">Repay weekly with ease and grow your business steadily.</p>
+        <ul class="lp-loan-features" aria-label="Weekly Loan features">
+          <li>Affordable weekly installments</li>
+          <li>Build credit history</li>
+          <li>Flexible loan amounts</li>
+        </ul>
+      </article>
+
+      <!-- Monthly -->
+      <article class="lp-loan-card" aria-label="Monthly Loans">
+        <div class="lp-loan-icon" aria-hidden="true">
+          <i class="fa fa-calendar-alt"></i>
+        </div>
+        <h3 class="lp-loan-title">Monthly Loans</h3>
+        <p class="lp-loan-desc">Longer tenure loans for bigger goals and business expansion.</p>
+        <ul class="lp-loan-features" aria-label="Monthly Loan features">
+          <li>Competitive rates</li>
+          <li>Easy monthly repayments</li>
+          <li>Higher loan amounts</li>
+        </ul>
+      </article>
+
+    </div>
+
+    <div class="lp-loans-cta">
+      <a href="/auth/register" class="btn-blue" id="viewAllLoansBtn">
+        View All Loan Options &nbsp;&rarr;
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     HOW IT WORKS
+     ======================================================== -->
+<section class="lp-section lp-section-alt" id="how-it-works" aria-labelledby="howItWorksHeading">
+  <div class="lp-container">
+    <div class="lp-section-head-center">
+      <span class="lp-section-label">How It Works</span>
+      <h2 class="lp-section-h2" id="howItWorksHeading">Simple Steps to Get Started</h2>
+    </div>
+
+    <div class="lp-steps" role="list">
+
+      <div class="lp-step" role="listitem">
+        <div class="lp-step-num" aria-hidden="true">
+          <i class="fa fa-file-alt"></i>
+        </div>
+        <span class="lp-step-label">Step 1</span>
+        <h3 class="lp-step-title">Apply</h3>
+        <p class="lp-step-desc">Submit your application<br>online or visit our office.</p>
+      </div>
+
+      <div class="lp-step" role="listitem">
+        <div class="lp-step-num" aria-hidden="true">
+          <i class="fa fa-clipboard-check"></i>
+        </div>
+        <span class="lp-step-label">Step 2</span>
+        <h3 class="lp-step-title">Review</h3>
+        <p class="lp-step-desc">Our team reviews your<br>application quickly.</p>
+      </div>
+
+      <div class="lp-step" role="listitem">
+        <div class="lp-step-num" aria-hidden="true">
+          <i class="fa fa-check-circle"></i>
+        </div>
+        <span class="lp-step-label">Step 3</span>
+        <h3 class="lp-step-title">Approve</h3>
+        <p class="lp-step-desc">Get approved and receive<br>your loan offer.</p>
+      </div>
+
+      <div class="lp-step" role="listitem">
+        <div class="lp-step-num" aria-hidden="true">
+          <i class="fa fa-money-bill-wave"></i>
+        </div>
+        <span class="lp-step-label">Step 4</span>
+        <h3 class="lp-step-title">Disburse</h3>
+        <p class="lp-step-desc">Funds are disbursed and<br>you achieve your goals.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     WHY AMANAH CAPITAL
+     ======================================================== -->
+<section class="lp-section" id="why-amanah" aria-labelledby="whyAmanahHeading">
+  <div class="lp-container">
+    <div class="lp-section-head-center">
+      <span class="lp-section-label">Why Amanah Capital?</span>
+      <h2 class="lp-section-h2" id="whyAmanahHeading">Built on Trust. Driven by Values.</h2>
+    </div>
+
+    <div class="lp-values" role="list">
+
+      <div class="lp-value-item" role="listitem">
+        <div class="lp-value-icon" aria-hidden="true">
+          <i class="fa fa-shield-alt"></i>
+        </div>
+        <h3 class="lp-value-title">Integrity</h3>
+        <p class="lp-value-desc">We operate with honesty and uphold the highest ethical standards.</p>
+      </div>
+
+      <div class="lp-value-item" role="listitem">
+        <div class="lp-value-icon" aria-hidden="true">
+          <i class="fa fa-heart"></i>
+        </div>
+        <h3 class="lp-value-title">Customer First</h3>
+        <p class="lp-value-desc">Your growth is our priority. We are here to support you at every step.</p>
+      </div>
+
+      <div class="lp-value-item" role="listitem">
+        <div class="lp-value-icon" aria-hidden="true">
+          <i class="fa fa-eye"></i>
+        </div>
+        <h3 class="lp-value-title">Transparent Process</h3>
+        <p class="lp-value-desc">Clear policies, fair rates, and complete transparency in everything we do.</p>
+      </div>
+
+      <div class="lp-value-item" role="listitem">
+        <div class="lp-value-icon" aria-hidden="true">
+          <i class="fa fa-headset"></i>
+        </div>
+        <h3 class="lp-value-title">Reliable Support</h3>
+        <p class="lp-value-desc">Our dedicated team is always ready to help you succeed.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     FOOTER
+     ======================================================== -->
+<footer class="lp-footer" role="contentinfo">
+  <div class="lp-container">
+    <div class="lp-footer-grid">
+
+      <!-- Brand col -->
+      <div>
+        <img
+          src="/brand-logo/AMANATH_CAPITAL_DETAILS-removebg-preview.png"
+          alt="Amanah Capital"
+          class="lp-footer-brand-logo"
+
+          style="filter: brightness(0) invert(1);"
+        >
+        <p class="lp-footer-brand-desc">
+          Smart financial solutions that empower individuals and businesses
+          to grow and succeed.
+        </p>
+      </div>
+
+      <!-- Company -->
+      <nav aria-label="Company links">
+        <div class="lp-footer-col-title">Company</div>
+        <ul class="lp-footer-links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Team</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </nav>
+
+      <!-- Loans -->
+      <nav aria-label="Loan product links">
+        <div class="lp-footer-col-title">Loans</div>
+        <ul class="lp-footer-links">
+          <li><a href="#loan-solutions">Daily Loans</a></li>
+          <li><a href="#loan-solutions">Weekly Loans</a></li>
+          <li><a href="#loan-solutions">Monthly Loans</a></li>
+          <li><a href="/auth/register">Eligibility</a></li>
+        </ul>
+      </nav>
+
+      <!-- Support -->
+      <nav aria-label="Support links">
+        <div class="lp-footer-col-title">Support</div>
+        <ul class="lp-footer-links">
+          <li><a href="#">FAQs</a></li>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </nav>
+
+      <!-- Contact -->
+      <div>
+        <div class="lp-footer-col-title">Contact Us</div>
+        <div class="lp-footer-contact-item">
+          <i class="fa fa-map-marker-alt" aria-hidden="true"></i>
+          <span>Amanah Capital Office<br>[Address Placeholder]</span>
+        </div>
+        <div class="lp-footer-contact-item">
+          <i class="fa fa-phone" aria-hidden="true"></i>
+          <span>[Phone Placeholder]</span>
+        </div>
+        <div class="lp-footer-contact-item">
+          <i class="fa fa-envelope" aria-hidden="true"></i>
+          <span>[Email Placeholder]</span>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+
+    <!-- Bottom bar -->
+    <div class="lp-footer-bottom">
+      <p class="lp-footer-copy">
+        &copy; <%= new Date().getFullYear() %> Amanah Capital. All rights reserved.
+      </p>
+      <div class="lp-footer-social" aria-label="Social media links">
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+        <a href="#" aria-label="YouTube"><i class="fab fa-youtube" aria-hidden="true"></i></a>
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ========================================================
+     JAVASCRIPT
+     ======================================================== -->
+<script>
+(function() {
+  'use strict';
+
+  /* --- Sticky header shadow on scroll --- */
+  var header = document.getElementById('lpHeader');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  /* --- Mobile hamburger toggle --- */
+  var hamburger = document.getElementById('lpHamburger');
+  var mobileMenu = document.getElementById('lpMobileMenu');
+
+  hamburger.addEventListener('click', function() {
+    var isOpen = hamburger.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', isOpen);
+    if (isOpen) {
+      mobileMenu.style.display = 'flex';
+      requestAnimationFrame(function() {
+        mobileMenu.classList.add('visible');
+      });
+    } else {
+      mobileMenu.classList.remove('visible');
+      setTimeout(function() { mobileMenu.style.display = 'none'; }, 250);
+    }
+  });
+
+  /* Close mobile menu on outside click */
+  document.addEventListener('click', function(e) {
+    if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      mobileMenu.classList.remove('visible');
+      setTimeout(function() { mobileMenu.style.display = 'none'; }, 250);
+    }
+  });
+
+  /* --- Smooth scroll for anchor links --- */
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
+      var target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+})();
+</script>

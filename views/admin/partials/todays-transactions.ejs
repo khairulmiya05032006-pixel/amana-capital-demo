@@ -1,0 +1,97 @@
+<div class="admin-widget mb-4">
+  <div class="admin-widget-header">
+    <div class="admin-widget-title">
+      <i class="fa fa-calendar-day"></i>
+      Today's Transactions
+      <span class="text-sm text-muted fw-400 ms-2">Payments received today</span>
+    </div>
+  </div>
+
+  <div class="p-4" style="background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+    <div class="admin-kpi-grid mb-0">
+      <!-- Summary Cards -->
+      <div class="admin-kpi-card" style="border-left: 4px solid #14B8A6; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+      <div class="admin-kpi-icon-wrap icon-teal">
+        <i class="fa fa-coins"></i>
+      </div>
+      <div class="admin-kpi-details">
+        <span class="admin-kpi-label">Total Collected</span>
+        <span class="admin-kpi-value text-primary"><%= formatINR(todaysTransactions.totalCollected) %></span>
+        <span class="text-xs fw-500 text-muted"><%= todaysTransactions.totalTransactions %> Payments Received Today</span>
+      </div>
+    </div>
+    
+    <div class="admin-kpi-card">
+      <div class="admin-kpi-icon-wrap icon-blue">
+        <i class="fa fa-calendar-day"></i>
+      </div>
+      <div class="admin-kpi-details">
+        <span class="admin-kpi-label">DAILY</span>
+        <span class="admin-kpi-value"><%= todaysTransactions.daily.count %> payments</span>
+        <span class="text-xs fw-500 text-muted"><%= formatINR(todaysTransactions.daily.amount) %></span>
+      </div>
+    </div>
+    
+    <div class="admin-kpi-card">
+      <div class="admin-kpi-icon-wrap icon-amber">
+        <i class="fa fa-calendar-week"></i>
+      </div>
+      <div class="admin-kpi-details">
+        <span class="admin-kpi-label">WEEKLY</span>
+        <span class="admin-kpi-value"><%= todaysTransactions.weekly.count %> payments</span>
+        <span class="text-xs fw-500 text-muted"><%= formatINR(todaysTransactions.weekly.amount) %></span>
+      </div>
+    </div>
+
+    <div class="admin-kpi-card">
+      <div class="admin-kpi-icon-wrap icon-purple">
+        <i class="fa fa-calendar-alt"></i>
+      </div>
+      <div class="admin-kpi-details">
+        <span class="admin-kpi-label">MONTHLY</span>
+        <span class="admin-kpi-value"><%= todaysTransactions.monthly.count %> payments</span>
+        <span class="text-xs fw-500 text-muted"><%= formatINR(todaysTransactions.monthly.amount) %></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="table-responsive">
+    <table class="admin-table w-100">
+      <thead>
+        <tr>
+          <th>TIME</th>
+          <th>CUSTOMER</th>
+          <th>LOAN</th>
+          <th>FREQUENCY</th>
+          <th>METHOD</th>
+          <th>AMOUNT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (todaysTransactions.transactions && todaysTransactions.transactions.length > 0) { %>
+          <% todaysTransactions.transactions.forEach(tx => { %>
+            <tr>
+              <td class="text-body"><%= new Date(tx.payment_date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) %></td>
+              <td class="fw-500 text-heading"><%= tx.customer_name %></td>
+              <td class="text-primary fw-600"><%= tx.loan_number %></td>
+              <td><span class="admin-badge badge-secondary"><%= tx.repayment_frequency %></span></td>
+              <td><span class="admin-badge badge-primary"><%= tx.payment_method %></span></td>
+              <td class="fw-600 text-success"><%= formatINR(tx.payment_amount) %></td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="6" class="text-center text-muted py-5">
+              <div class="admin-empty-state">
+                <i class="fa fa-receipt" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 0.5rem;"></i>
+                <div class="admin-empty-title">No transactions today</div>
+                <div class="admin-empty-desc">There are no payments received today yet.</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

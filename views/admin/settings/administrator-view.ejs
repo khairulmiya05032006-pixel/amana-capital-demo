@@ -1,0 +1,755 @@
+<% layout('layouts/adminLayout') -%>
+<%
+  const roleColors = {
+    'SUPER_ADMIN':       { bg: '#EEF2FF', color: '#4338CA', label: 'Super Admin',       icon: 'fa-crown' },
+    'LOAN_OFFICER':      { bg: '#ECFDF5', color: '#059669', label: 'Loan Officer',       icon: 'fa-file-invoice-dollar' },
+    'COLLECTION_OFFICER':{ bg: '#FEF3C7', color: '#D97706', label: 'Collection Officer', icon: 'fa-hand-holding-usd' },
+    'ACCOUNT_OFFICER':   { bg: '#E0F2FE', color: '#0284C7', label: 'Account Officer',    icon: 'fa-calculator' },
+    'AUDITOR':           { bg: '#F3E8FF', color: '#9333EA', label: 'Auditor',            icon: 'fa-search-dollar' },
+    'VIEWER':            { bg: '#F1F5F9', color: '#64748B', label: 'Viewer',             icon: 'fa-eye' },
+  };
+  const roleInfo = roleColors[admin.role] || { bg: '#F1F5F9', color: '#64748B', label: admin.role, icon: 'fa-user' };
+  const initials = (admin.full_name || admin.email || 'A').trim().split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+  const isActive = admin.account_status === 'ACTIVE';
+  const isSelf = loggedInUser.id == admin.id;
+  const canManage = loggedInUser.role === 'SUPER_ADMIN';
+
+  const allModules = [
+    { name: 'Dashboard',              icon: 'fa-tachometer-alt',   category: 'core' },
+    { name: 'Account Balance',        icon: 'fa-wallet',           category: 'core' },
+    { name: 'Applications',           icon: 'fa-file-alt',         category: 'operations' },
+    { name: 'Customers',              icon: 'fa-users',            category: 'operations' },
+    { name: 'Loans & Disbursal',      icon: 'fa-hand-holding-usd', category: 'operations' },
+    { name: 'Repayments',             icon: 'fa-money-check-alt',  category: 'operations' },
+    { name: 'Reports',                icon: 'fa-chart-bar',        category: 'reporting' },
+    { name: 'Penalty Settings',       icon: 'fa-exclamation-circle',category:'admin' },
+    { name: 'Settings',               icon: 'fa-sliders-h',        category: 'admin' },
+    { name: 'Administrator Management',icon:'fa-users-cog',        category: 'admin' },
+  ];
+%>
+
+<!-- ─── Page Styles ─────────────────────────────────────────── -->
+<style>
+  /* ── Hero Banner ── */
+  .av-hero {
+    position: relative;
+    background: linear-gradient(135deg, #0D2047 0%, #1955DC 60%, #4F46E5 100%);
+    border-radius: 20px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    color: #fff;
+    box-shadow: 0 12px 40px rgba(25,85,220,.25);
+  }
+  .av-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 260px; height: 260px;
+    background: rgba(255,255,255,.06);
+    border-radius: 50%;
+  }
+  .av-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: 120px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,.04);
+    border-radius: 50%;
+  }
+  .av-hero-content { position: relative; z-index: 2; }
+
+  /* ── Avatar ── */
+  .av-avatar-ring {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.15);
+    border: 3px solid rgba(255,255,255,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    backdrop-filter: blur(4px);
+    letter-spacing: 1px;
+  }
+  .av-status-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    position: absolute;
+    bottom: 2px; right: 2px;
+  }
+  .av-status-dot.active   { background: #34D399; box-shadow: 0 0 8px rgba(52,211,153,.6); }
+  .av-status-dot.inactive { background: #F87171; }
+
+  /* ── Hero Badges ── */
+  .av-role-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: .75rem; font-weight: 700;
+    border: 1.5px solid rgba(255,255,255,.3);
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    backdrop-filter: blur(4px);
+  }
+  .av-status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: .75rem; font-weight: 700;
+    background: rgba(255,255,255,.1);
+    color: rgba(255,255,255,.9);
+    border: 1.5px solid rgba(255,255,255,.2);
+  }
+  .av-status-badge.active  { background: rgba(52,211,153,.2); border-color: rgba(52,211,153,.5); color: #A7F3D0; }
+  .av-status-badge.inactive{ background: rgba(248,113,113,.2); border-color: rgba(248,113,113,.5); color: #FCA5A5; }
+
+  /* ── Hero Stats Row ── */
+  .av-hero-meta {
+    display: flex; flex-wrap: wrap; gap: 28px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,.15);
+  }
+  .av-hero-meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .av-hero-meta-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.55); }
+  .av-hero-meta-value { font-size: .85rem; font-weight: 700; color: rgba(255,255,255,.95); }
+
+  /* ── Action Buttons in hero ── */
+  .av-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .av-hero-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px;
+    border-radius: 10px;
+    font-size: .78rem; font-weight: 700;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-decoration: none;
+    border: none;
+  }
+  .av-hero-btn-primary { background: rgba(255,255,255,.22); color: #fff; border: 1.5px solid rgba(255,255,255,.35); }
+  .av-hero-btn-primary:hover { background: rgba(255,255,255,.32); color: #fff; transform: translateY(-1px); }
+  .av-hero-btn-ghost { background: transparent; color: rgba(255,255,255,.75); border: 1.5px solid rgba(255,255,255,.2); }
+  .av-hero-btn-ghost:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .av-hero-btn-back { background: rgba(255,255,255,.12); color: rgba(255,255,255,.8); border: 1.5px solid rgba(255,255,255,.15); }
+  .av-hero-btn-back:hover { background: rgba(255,255,255,.2); color: #fff; }
+
+  /* ── Tab Navigation ── */
+  .av-tab-nav {
+    display: flex; gap: 4px;
+    background: #F1F5F9;
+    border-radius: 12px;
+    padding: 5px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+  .av-tab-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-size: .8rem; font-weight: 600;
+    color: #64748B;
+    cursor: pointer;
+    transition: all .2s ease;
+    white-space: nowrap;
+  }
+  .av-tab-btn.active {
+    background: #fff;
+    color: #1955DC;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  }
+  .av-tab-btn:hover:not(.active) { color: #1E293B; background: rgba(255,255,255,.6); }
+  .av-tab-btn i { font-size: .78rem; }
+
+  /* ── Info Card ── */
+  .av-info-card { background: #fff; border-radius: 16px; border: 1px solid #E5E7EB; box-shadow: 0 2px 12px rgba(15,23,42,.05); }
+  .av-info-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #F1F5F9;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .av-info-card-title { font-size: .95rem; font-weight: 700; color: #0F172A; display: flex; align-items: center; gap: 10px; }
+  .av-info-card-title i { font-size: 1rem; color: #1955DC; width: 32px; height: 32px; background: #EEF2FF; border-radius: 8px; display:flex; align-items:center; justify-content:center; }
+  .av-info-card-body { padding: 24px; }
+
+  /* ── Detail Row ── */
+  .av-detail-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 13px 0;
+    border-bottom: 1px solid #F8FAFC;
+    gap: 12px;
+  }
+  .av-detail-row:last-child { border-bottom: none; }
+  .av-detail-label { font-size: .78rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: .05em; min-width: 130px; flex-shrink: 0; padding-top: 2px; }
+  .av-detail-value { font-size: .88rem; font-weight: 600; color: #0F172A; text-align: right; }
+
+  /* ── Permission Grid ── */
+  .av-perm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .av-perm-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1.5px solid;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .av-perm-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+  .av-perm-item.granted { background: #F0FDF4; border-color: #86EFAC; }
+  .av-perm-item.denied  { background: #FAFAFA; border-color: #E5E7EB; }
+  .av-perm-icon { width: 34px; height: 34px; border-radius: 9px; display:flex; align-items:center; justify-content:center; font-size: .9rem; flex-shrink:0; }
+  .av-perm-item.granted .av-perm-icon { background: #DCFCE7; color: #16A34A; }
+  .av-perm-item.denied  .av-perm-icon { background: #F1F5F9; color: #94A3B8; }
+  .av-perm-name { font-size: .82rem; font-weight: 600; }
+  .av-perm-item.granted .av-perm-name { color: #166534; }
+  .av-perm-item.denied  .av-perm-name { color: #94A3B8; text-decoration: line-through; }
+
+  /* ── Category Chip ── */
+  .av-category-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  .chip-core        { background:#EEF2FF; color:#4338CA; }
+  .chip-operations  { background:#ECFDF5; color:#059669; }
+  .chip-reporting   { background:#FFF7ED; color:#C2410C; }
+  .chip-admin       { background:#FEF3C7; color:#B45309; }
+
+  /* ── Timeline (Audit) ── */
+  .av-timeline { list-style: none; padding: 0; margin: 0; position: relative; }
+  .av-timeline::before { content:''; position:absolute; left:16px; top:0; bottom:0; width:2px; background:#F1F5F9; }
+  .av-timeline-item { position: relative; padding-left: 44px; padding-bottom: 20px; }
+  .av-timeline-item:last-child { padding-bottom: 0; }
+  .av-timeline-dot {
+    position: absolute; left: 6px; top: 4px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #EEF2FF;
+    border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 3px #EEF2FF;
+    z-index: 1;
+  }
+  .av-timeline-dot i { font-size: .55rem; color: #1955DC; }
+  .av-timeline-action { font-size: .75rem; font-weight: 700; color: #1955DC; margin-bottom: 3px; text-transform: uppercase; letter-spacing: .05em; }
+  .av-timeline-desc { font-size: .82rem; color: #475569; line-height: 1.5; }
+  .av-timeline-date { font-size: .7rem; color: #94A3B8; margin-top: 4px; font-weight: 600; }
+
+  /* ── Login History ── */
+  .av-login-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #F8FAFC;
+    gap: 16px;
+  }
+  .av-login-item:last-child { border-bottom: none; }
+  .av-login-icon { width: 38px; height: 38px; border-radius: 10px; background: #EEF2FF; color: #1955DC; display:flex; align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
+  .av-login-main { flex: 1; }
+  .av-login-date { font-size:.82rem; font-weight:700; color:#0F172A; }
+  .av-login-ip   { font-size:.75rem; color:#94A3B8; margin-top:2px; }
+  .av-login-status { font-size:.72rem; font-weight:700; padding:4px 10px; border-radius:999px; }
+  .av-login-status.ok  { background:#DCFCE7; color:#166534; }
+  .av-login-status.fail{ background:#FEE2E2; color:#991B1B; }
+
+  /* ── Danger Zone ── */
+  .av-danger-zone {
+    border-radius: 16px;
+    border: 1.5px solid #FCA5A5;
+    background: linear-gradient(135deg, #FFF5F5 0%, #FFF1F1 100%);
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .av-danger-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid #FCA5A5;
+    background: rgba(220,38,38,.04);
+  }
+  .av-danger-body { padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .av-danger-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 1px solid #FEE2E2;
+    gap: 16px;
+  }
+  .av-danger-row-info h6 { font-size:.88rem; font-weight:700; color:#0F172A; margin:0 0 4px; }
+  .av-danger-row-info p  { font-size:.75rem; color:#94A3B8; margin:0; }
+
+  /* ── Empty State ── */
+  .av-empty { text-align:center; padding: 40px 20px; }
+  .av-empty-icon { width:60px; height:60px; background:#F1F5F9; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:1.5rem; color:#CBD5E1; }
+  .av-empty p { color:#94A3B8; font-size:.85rem; font-weight:600; }
+
+  /* ── Scrollbar Polish ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+</style>
+
+<!-- ─── Breadcrumb + Back ─────────────────────────────────────── -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div class="d-flex align-items-center gap-2" style="font-size:.78rem; color:#94A3B8; font-weight:600;">
+    <a href="/admin/settings" style="color:#94A3B8; text-decoration:none;">Settings</a>
+    <i class="fa fa-chevron-right" style="font-size:.6rem;"></i>
+    <a href="/admin/settings?tab=administration" style="color:#94A3B8; text-decoration:none;">Administrator Management</a>
+    <i class="fa fa-chevron-right" style="font-size:.6rem;"></i>
+    <span style="color:#1955DC;"><%= admin.full_name || admin.email %></span>
+  </div>
+  <a href="/admin/settings?tab=administration" class="av-hero-btn av-hero-btn-back" style="color:#475569; border-color:#E5E7EB; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.06);">
+    <i class="fa fa-arrow-left"></i> Back to Administrators
+  </a>
+</div>
+
+<!-- ─── Hero Profile Banner ───────────────────────────────────── -->
+<div class="av-hero">
+  <div class="av-hero-content">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-4">
+
+      <!-- Left: Avatar + Identity -->
+      <div class="d-flex align-items-center gap-4">
+        <div class="position-relative">
+          <div class="av-avatar-ring"><%= initials %></div>
+          <div class="av-status-dot <%= isActive ? 'active' : 'inactive' %>"></div>
+        </div>
+
+        <div>
+          <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 6px; color:#fff; letter-spacing:-.02em;">
+            <%= admin.full_name || 'Admin User' %>
+          </h1>
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <span class="av-role-badge">
+              <i class="fa <%= roleInfo.icon %>"></i> <%= roleInfo.label %>
+            </span>
+            <span class="av-status-badge <%= isActive ? 'active' : 'inactive' %>">
+              <i class="fa fa-circle" style="font-size:.5rem;"></i>
+              <%= admin.account_status %>
+            </span>
+            <% if (admin.user_code) { %>
+              <span style="font-size:.72rem; color:rgba(255,255,255,.5); font-weight:700; font-family:monospace;"><%= admin.user_code %></span>
+            <% } %>
+          </div>
+
+          <!-- Hero Actions -->
+          <% if (canManage || isSelf) { %>
+            <div class="av-hero-actions">
+              <button type="button" class="av-hero-btn av-hero-btn-primary" onclick="openEditModal()">
+                <i class="fa fa-edit"></i> Edit Profile
+              </button>
+              <button type="button" class="av-hero-btn av-hero-btn-ghost" onclick="openPasswordModal()">
+                <i class="fa fa-key"></i> Reset Password
+              </button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Right: Quick Stats -->
+      <div class="av-hero-meta">
+        <div class="av-hero-meta-item">
+          <span class="av-hero-meta-label"><i class="fa fa-envelope me-1"></i> Email</span>
+          <span class="av-hero-meta-value"><%= admin.email %></span>
+        </div>
+        <% if (admin.phone) { %>
+          <div class="av-hero-meta-item">
+            <span class="av-hero-meta-label"><i class="fa fa-phone me-1"></i> Phone</span>
+            <span class="av-hero-meta-value"><%= admin.phone %></span>
+          </div>
+        <% } %>
+        <% if (loggedInUser.role === 'SUPER_ADMIN') { %>
+          <div class="av-hero-meta-item">
+            <span class="av-hero-meta-label"><i class="fa fa-calendar-alt me-1"></i> Joined</span>
+            <span class="av-hero-meta-value"><%= formatDate(admin.created_at) %></span>
+          </div>
+          <div class="av-hero-meta-item">
+            <span class="av-hero-meta-label"><i class="fa fa-user-plus me-1"></i> Created By</span>
+            <span class="av-hero-meta-value"><%= admin.created_by || 'System' %></span>
+          </div>
+        <% } %>
+        <div class="av-hero-meta-item">
+          <span class="av-hero-meta-label"><i class="fa fa-clock me-1"></i> Last Login</span>
+          <span class="av-hero-meta-value"><%= admin.last_login ? formatDate(admin.last_login) : 'Never' %></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── Tab Navigation ────────────────────────────────────────── -->
+<div class="av-tab-nav" id="profileTabNav">
+  <button class="av-tab-btn active" onclick="switchTab('info', this)">
+    <i class="fa fa-id-card"></i> Information
+  </button>
+  <% if (loggedInUser.role === 'SUPER_ADMIN') { %>
+    <button class="av-tab-btn" onclick="switchTab('perms', this)">
+      <i class="fa fa-shield-alt"></i> Permissions
+      <span style="background:#EEF2FF; color:#4338CA; font-size:.65rem; font-weight:800; padding:2px 7px; border-radius:999px; margin-left:2px;">
+        <%= admin.permissions ? admin.permissions.length : 0 %>/<%= allModules.length %>
+      </span>
+    </button>
+    <button class="av-tab-btn" onclick="switchTab('logins', this)">
+      <i class="fa fa-sign-in-alt"></i> Login History
+    </button>
+    <button class="av-tab-btn" onclick="switchTab('audit', this)">
+      <i class="fa fa-history"></i> Audit Logs
+    </button>
+  <% } %>
+</div>
+
+<!-- ─── Tab Panels ────────────────────────────────────────────── -->
+
+<!-- INFORMATION -->
+<div id="tab-info" class="tab-panel">
+  <div class="row g-4">
+
+    <!-- Account Details -->
+    <div class="col-md-6">
+      <div class="av-info-card h-100">
+        <div class="av-info-card-header">
+          <div class="av-info-card-title">
+            <i class="fa fa-user"></i> Personal Details
+          </div>
+        </div>
+        <div class="av-info-card-body">
+          <div class="av-detail-row">
+            <span class="av-detail-label">Full Name</span>
+            <span class="av-detail-value"><%= admin.full_name || '—' %></span>
+          </div>
+          <div class="av-detail-row">
+            <span class="av-detail-label">Email Address</span>
+            <span class="av-detail-value" style="word-break:break-all;"><%= admin.email %></span>
+          </div>
+          <div class="av-detail-row">
+            <span class="av-detail-label">Mobile Number</span>
+            <span class="av-detail-value"><%= admin.phone || '—' %></span>
+          </div>
+          <div class="av-detail-row">
+            <span class="av-detail-label">Department</span>
+            <span class="av-detail-value">Administration</span>
+          </div>
+          <div class="av-detail-row">
+            <span class="av-detail-label">2-Factor Auth</span>
+            <span class="av-detail-value">
+              <span style="background:#F1F5F9; color:#64748B; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px;">Disabled</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Status -->
+    <div class="col-md-6">
+      <div class="av-info-card h-100">
+        <div class="av-info-card-header">
+          <div class="av-info-card-title">
+            <i class="fa fa-info-circle"></i> Account Details
+          </div>
+        </div>
+        <div class="av-info-card-body">
+          <% if (loggedInUser.role === 'SUPER_ADMIN') { %>
+            <div class="av-detail-row">
+              <span class="av-detail-label">Admin ID</span>
+              <span class="av-detail-value" style="font-family:monospace; font-size:.82rem;">#<%= admin.id %></span>
+            </div>
+            <div class="av-detail-row">
+              <span class="av-detail-label">User Code</span>
+              <span class="av-detail-value" style="font-family:monospace; font-size:.82rem; background:#F1F5F9; padding:3px 10px; border-radius:6px;"><%= admin.user_code %></span>
+            </div>
+          <% } %>
+          <div class="av-detail-row">
+            <span class="av-detail-label">Role</span>
+            <span class="av-detail-value">
+              <span class="av-role-badge" data-bg="<%= roleInfo.bg %>" data-color="<%= roleInfo.color %>">
+                <i class="fa <%= roleInfo.icon %> me-1"></i> <%= roleInfo.label %>
+              </span>
+            </span>
+          </div>
+          <div class="av-detail-row">
+            <span class="av-detail-label">Account Status</span>
+            <span class="av-detail-value">
+              <% if (isActive) { %>
+                <span style="background:#DCFCE7; color:#166534; font-size:.75rem; font-weight:700; padding:4px 12px; border-radius:999px;">
+                  <i class="fa fa-check-circle me-1"></i> Active
+                </span>
+              <% } else { %>
+                <span style="background:#FEE2E2; color:#991B1B; font-size:.75rem; font-weight:700; padding:4px 12px; border-radius:999px;">
+                  <i class="fa fa-times-circle me-1"></i> <%= admin.account_status %>
+                </span>
+              <% } %>
+            </span>
+          </div>
+          <% if (loggedInUser.role === 'SUPER_ADMIN') { %>
+            <div class="av-detail-row">
+              <span class="av-detail-label">Date Joined</span>
+              <span class="av-detail-value"><%= formatDate(admin.created_at) %></span>
+            </div>
+          <% } %>
+          <div class="av-detail-row">
+            <span class="av-detail-label">Last Login</span>
+            <span class="av-detail-value"><%= admin.last_login ? formatDate(admin.last_login) : 'Never logged in' %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PERMISSIONS -->
+<% if (loggedInUser.role === 'SUPER_ADMIN') { %>
+<div id="tab-perms" class="tab-panel" style="display:none;">
+  <div class="av-info-card">
+    <div class="av-info-card-header">
+      <div class="av-info-card-title">
+        <i class="fa fa-shield-alt"></i> Module Permissions
+      </div>
+      <div style="font-size:.78rem; color:#94A3B8; font-weight:600;">
+        <% const grantedCount = allModules.filter(m => (admin.permissions && admin.permissions.includes(m.name)) || admin.role === 'SUPER_ADMIN').length; %>
+        <span style="color:#16A34A; font-weight:800;"><%= grantedCount %></span> of <%= allModules.length %> granted
+      </div>
+    </div>
+    <div class="av-info-card-body">
+      <%
+        const cats = [...new Set(allModules.map(m => m.category))];
+        const catLabels = { core:'Core System', operations:'Operations', reporting:'Reporting', admin:'Administration' };
+        const catChip   = { core:'core', operations:'operations', reporting:'reporting', admin:'admin' };
+      %>
+      <% cats.forEach(cat => { %>
+        <span class="av-category-chip chip-<%= catChip[cat] %>"><i class="fa fa-tag me-1"></i><%= catLabels[cat] || cat %></span>
+        <div class="av-perm-grid mb-4">
+          <% allModules.filter(m => m.category === cat).forEach(mod => {
+            const hasPerm = (admin.permissions && admin.permissions.includes(mod.name)) || admin.role === 'SUPER_ADMIN';
+          %>
+            <div class="av-perm-item <%= hasPerm ? 'granted' : 'denied' %>">
+              <div class="av-perm-icon"><i class="fa <%= mod.icon %>"></i></div>
+              <div>
+                <div class="av-perm-name"><%= mod.name %></div>
+                <div class="av-perm-status <%= hasPerm ? 'av-perm-granted-text' : 'av-perm-denied-text' %>">
+                  <% if (hasPerm) { %><i class="fa fa-check me-1"></i>Access Granted<% } else { %><i class="fa fa-times me-1"></i>No Access<% } %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+// LOGIN HISTORY 
+<div id="tab-logins" class="tab-panel" style="display:none;">
+  <div class="av-info-card">
+    <div class="av-info-card-header">
+      <div class="av-info-card-title">
+        <i class="fa fa-sign-in-alt"></i> Recent Login Activity
+      </div>
+      <span style="font-size:.75rem; color:#94A3B8; font-weight:600;">Last 20 sessions</span>
+    </div>
+    <div class="av-info-card-body" style="padding-bottom:8px;">
+      <% if (loginHistory && loginHistory.length > 0) { %>
+        <% loginHistory.forEach((log, idx) => { %>
+          <div class="av-login-item">
+            <div class="av-login-icon"><i class="fa fa-sign-in-alt"></i></div>
+            <div class="av-login-main">
+              <div class="av-login-date"><%= formatDate(log.date) %></div>
+              <div class="av-login-ip">
+                <i class="fa fa-map-marker-alt me-1"></i><%= log.ip || 'Unknown IP' %>
+                <% if (log.browser && log.browser !== 'Unknown') { %> &bull; <%= log.browser %><% } %>
+              </div>
+            </div>
+            <span class="av-login-status ok"><i class="fa fa-check me-1"></i>Success</span>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="av-empty">
+          <div class="av-empty-icon"><i class="fa fa-sign-in-alt"></i></div>
+          <p>No login activity recorded yet.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+// !-- AUDIT LOGS -->
+<div id="tab-audit" class="tab-panel" style="display:none;">
+  <div class="av-info-card">
+    <div class="av-info-card-header">
+      <div class="av-info-card-title">
+        <i class="fa fa-history"></i> Audit Trail
+      </div>
+      <span style="font-size:.75rem; color:#94A3B8; font-weight:600;">Last 20 actions</span>
+    </div>
+    <div class="av-info-card-body">
+      <% if (auditHistory && auditHistory.length > 0) { %>
+        <ul class="av-timeline">
+          <% auditHistory.forEach((log, idx) => { %>
+            <li class="av-timeline-item">
+              <div class="av-timeline-dot"><i class="fa fa-bolt"></i></div>
+              <div class="av-timeline-action"><%= log.action %></div>
+              <div class="av-timeline-desc"><%= log.description %></div>
+              <div class="av-timeline-date"><i class="fa fa-clock me-1"></i><%= formatDate(log.date) %></div>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <div class="av-empty">
+          <div class="av-empty-icon"><i class="fa fa-history"></i></div>
+          <p>No audit actions recorded yet.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+// !-- DANGER ZONE -->
+<% if (canManage && !isSelf) { %>
+  <div class="av-danger-zone mt-4">
+    <div class="av-danger-header">
+      <div class="d-flex align-items-center gap-3">
+        <div style="width:36px;height:36px;background:rgba(220,38,38,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <i class="fa fa-exclamation-triangle" style="color:#DC2626;"></i>
+        </div>
+        <div>
+          <div style="font-size:.9rem;font-weight:800;color:#991B1B;">Danger Zone</div>
+          <div style="font-size:.75rem;color:#B91C1C;">Irreversible actions — proceed with caution.</div>
+        </div>
+      </div>
+    </div>
+    <div class="av-danger-body">
+
+      // !-- Disable / Enable -->
+
+      <div class="av-danger-row">
+        <div class="av-danger-row-info">
+          <h6><% if (isActive) { %>Disable Administrator Account<% } else { %>Enable Administrator Account<% } %></h6>
+          <p><% if (isActive) { %>Block this administrator from logging in. All data remains intact.<% } else { %>Restore system access for this administrator.<% } %></p>
+        </div>
+        <% if (isActive) { %>
+          <button type="button" data-id="<%= admin.id %>" data-status="INACTIVE" data-name="<%= admin.full_name || admin.email %>" onclick="confirmStatusChange(this.dataset.id, this.dataset.status, this.dataset.name)" style="background:#FEF3C7;color:#92400E;border:none;border-radius:10px;padding:10px 20px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s ease;" onmouseover="this.style.background='#FDE68A'" onmouseout="this.style.background='#FEF3C7'">
+            <i class="fa fa-ban me-1"></i> Disable Account
+          </button>
+        <% } else { %>
+          <button type="button" data-id="<%= admin.id %>" data-status="ACTIVE" data-name="<%= admin.full_name || admin.email %>" onclick="confirmStatusChange(this.dataset.id, this.dataset.status, this.dataset.name)" style="background:#DCFCE7;color:#166534;border:none;border-radius:10px;padding:10px 20px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s ease;" onmouseover="this.style.background='#BBF7D0'" onmouseout="this.style.background='#DCFCE7'">
+            <i class="fa fa-check-circle me-1"></i> Enable Account
+          </button>
+        <% } %>
+      </div>
+
+      // !-- Delete -->
+      <div class="av-danger-row">
+        <div class="av-danger-row-info">
+          <h6 style="color:#DC2626;">Delete Administrator Account</h6>
+          <p>Permanently remove this administrator and all associated data. This cannot be undone.</p>
+        </div>
+        <button type="button" data-id="<%= admin.id %>" data-name="<%= admin.full_name || admin.email %>" onclick="confirmDelete(this.dataset.id, this.dataset.name)" style="background:#FEE2E2;color:#991B1B;border:none;border-radius:10px;padding:10px 20px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s ease;" onmouseover="this.style.background='#FECACA'" onmouseout="this.style.background='#FEE2E2'">
+          <i class="fa fa-trash me-1"></i> Delete Account
+        </button>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<% } /* end SUPER_ADMIN conditional */ %>
+
+<!-- spacer -->
+<div style="height:40px;"></div>
+
+<!-- ─── Scripts ───────────────────────────────────────────────── -->
+<script>
+  /* Tab switching */
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.av-tab-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('tab-' + name);
+    if (panel) panel.style.display = 'block';
+    btn.classList.add('active');
+  }
+
+  /* Status change */
+  function confirmStatusChange(id, newStatus, name) {
+    const action = newStatus === 'ACTIVE' ? 'enable' : 'disable';
+    if (!confirm(`Are you sure you want to ${action} ${name}'s account?`)) return;
+    fetch(`/admin/settings/administrators/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) { showToast(d.message, 'success'); setTimeout(() => location.reload(), 1200); }
+      else showToast(d.message || 'Failed to update status.', 'error');
+    })
+    .catch(() => showToast('Network error. Please try again.', 'error'));
+  }
+
+  /* Delete */
+  function confirmDelete(id, name) {
+    if (!confirm(`⚠️ DANGER: Permanently delete "${name}"?\n\nThis action CANNOT be undone.`)) return;
+    fetch(`/admin/settings/administrators/${id}`, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) { showToast('Administrator deleted.', 'success'); setTimeout(() => window.location = '/admin/settings?tab=administration', 1500); }
+      else showToast(d.message || 'Failed to delete.', 'error');
+    })
+    .catch(() => showToast('Network error.', 'error'));
+  }
+
+  /* Edit / Password placeholders */
+  function openEditModal()     { showToast('Edit Profile — coming soon.', 'info'); }
+  function openPasswordModal() { showToast('Reset Password — coming soon.', 'info'); }
+
+  /* Toast */
+  function showToast(msg, type) {
+    let c = document.getElementById('_av_toast_container');
+    if (!c) {
+      c = document.createElement('div');
+      c.id = '_av_toast_container';
+      Object.assign(c.style, { position:'fixed', bottom:'28px', right:'28px', zIndex:'9999', display:'flex', flexDirection:'column', gap:'8px' });
+      document.body.appendChild(c);
+    }
+    const colors = { success:'#DCFCE7:#166534', error:'#FEE2E2:#991B1B', info:'#EEF2FF:#4338CA' };
+    const [bg, col] = (colors[type] || colors.info).split(':');
+    const t = document.createElement('div');
+    t.style.cssText = `background:${bg};color:${col};padding:12px 20px;border-radius:12px;font-size:.82rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.12);max-width:320px;animation:fadeInUp .3s ease;`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+</script>
+
+<style>
+@keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* Role badge — colors applied by JS from data-* attrs */
+.av-role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* Permission status text */
+.av-perm-status {
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-top: 2px;
+}
+.av-perm-granted-text { color: #16A34A; }
+.av-perm-denied-text  { color: #CBD5E1; }
+</style>
+
+<script>
+  /* Apply data-bg / data-color to role badge at runtime (avoids EJS inside style attr) */
+  document.querySelectorAll('.av-role-badge[data-bg]').forEach(el => {
+    el.style.background = el.dataset.bg;
+    el.style.color      = el.dataset.color;
+  });
+</script>

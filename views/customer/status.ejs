@@ -1,0 +1,94 @@
+<% layout('layouts/main') %>
+
+<div class="dashboard-app-container">
+  
+  <div class="app-header-back" style="margin-bottom: 2rem;">
+    <a href="/customer/dashboard" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+    <h1 class="page-title-center">Application Status</h1>
+  </div>
+
+  <div class="notification-list">
+    <% if (applications && applications.length > 0) { %>
+      <% applications.forEach(app => { %>
+        <div class="glass-panel" style="margin-bottom: 1.5rem; padding: 1.5rem;">
+          
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div>
+              <div style="font-weight: 600; font-size: 1.1rem; color: var(--text-primary);"><%= app.loan_type_name || 'Loan Application' %></div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">ID: <%= app.application_number %></div>
+            </div>
+            
+            <% if (app.application_status === 'APPROVED' || app.application_status === 'DISBURSED') { %>
+              <div class="card-badge text-green" style="background: #dcfce7; color: #16a34a; border-color: #dcfce7;">
+                <%= app.application_status === 'DISBURSED' ? 'Active Loan' : 'Approved' %>
+              </div>
+            <% } else if (app.application_status === 'REJECTED') { %>
+              <div class="card-badge text-red" style="background: #fee2e2; color: #ef4444; border-color: #fee2e2;">Rejected</div>
+            <% } else { %>
+              <div class="card-badge text-orange" style="background: #ffedd5; color: #ea580c; border-color: #ffedd5;">Pending</div>
+            <% } %>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; background: #2d61dd; padding: 1rem; border-radius: 0.5rem;">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">Requested Amount</div>
+              <div style="font-weight: 600;">₹<%= Number(app.requested_amount).toLocaleString('en-IN') %></div>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">Duration</div>
+              <div style="font-weight: 600;"><%= app.requested_duration_months %> <%= (app.duration_unit || 'Months').charAt(0).toUpperCase() + (app.duration_unit || 'Months').slice(1).toLowerCase() %></div>
+            </div>
+          </div>
+
+          <% if (app.application_status === 'REJECTED' && app.admin_remarks) { %>
+            <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 1rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1rem;">
+              <div style="font-size: 0.8rem; color: #b91c1c; font-weight: 600; margin-bottom: 0.25rem;">Reason for Rejection</div>
+              <div style="font-size: 0.9rem; color: #991b1b; line-height: 1.4;"><%= app.admin_remarks %></div>
+            </div>
+            <a href="/customer/apply" class="btn btn-primary" style="width: 100%; display: block; text-align: center;">Re-apply for Loan</a>
+          <% } else if (app.application_status === 'DISBURSED' || app.application_status === 'APPROVED') { %>
+            <% if (app.loan_id) { %>
+              <a href="/customer/loans/<%= app.loan_id %>" class="btn btn-success" style="width: 100%; display: block; text-align: center;">View Loan Details</a>
+            <% } else { %>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 1rem;">
+                Your loan has been approved and is pending disbursement.
+              </div>
+            <% } %>
+          <% } else { %>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 1rem;">
+              Your application is currently under review by our team.
+            </div>
+          <% } %>
+
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="notification-item" style="justify-content: center; background: transparent; border: none; flex-direction: column; padding: 4rem 1rem;">
+        <i class="fa-solid fa-file-circle-question" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+        <div class="notification-text" style="color: #64748b; font-size: 1.1rem; text-align: center;">You have no active applications.</div>
+        <a href="/customer/apply" class="btn btn-primary" style="margin-top: 1.5rem;">Apply Now</a>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/customer/dashboard" class="nav-item">
+      <i class="fa-solid fa-building-columns"></i>
+      <span>Home</span>
+    </a>
+    <a href="/customer/loans" class="nav-item">
+      <i class="fa-solid fa-file-invoice"></i>
+      <span>Loan</span>
+    </a>
+    <a href="/customer/apply" class="nav-item">
+      <i class="fa-regular fa-calendar-check"></i>
+      <span>Apply</span>
+    </a>
+    <a href="/customer/profile" class="nav-item">
+      <i class="fa-regular fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+</div>

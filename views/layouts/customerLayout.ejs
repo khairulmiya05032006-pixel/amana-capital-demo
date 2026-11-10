@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title><%= typeof title !== 'undefined' ? title : 'AMANAH CAPITAL' %> - Customer</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <%- body %>
+
+    <script>
+        // Mobile app navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Handle messages if present
+        const messages = document.querySelectorAll('[data-alert]');
+        if (messages.length > 0) {
+            setTimeout(() => {
+                messages.forEach(msg => msg.style.display = 'none');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

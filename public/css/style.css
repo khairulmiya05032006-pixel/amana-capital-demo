@@ -1,0 +1,705 @@
+/* ============================================
+   PREMIUM MICROFINANCE UI
+   ============================================ */
+
+/* Layout */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--surface-200);
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+}
+
+.brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: var(--primary-600);
+}
+
+.inline-form {
+  display: inline;
+}
+
+.main-content {
+  min-height: calc(100vh - 70px - 80px); /* viewport - nav - footer */
+  padding: var(--spacing-2xl) var(--spacing-md);
+  background-color: var(--color-bg);
+}
+
+.footer {
+  padding: var(--spacing-xl) 0;
+  background-color: var(--admin-muted-text);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--surface-200);
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Auth Screens - Mobile First */
+.auth-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-bg);
+}
+
+.auth-container {
+  width: 100%;
+  padding: 24px;
+  background-color: var(--color-card);
+  border-radius: 0;
+}
+
+.auth-header-login {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.auth-title-login{
+    font-size: 31px;
+    font-weight: 600;
+    color: #0D1B2A;
+}
+.auth-subtitle-login{
+  color: var(--color-text-muted);
+  padding-left: .75rem;
+  font-size: 13px;
+  margin-bottom: 2rem;
+}
+.auth-header {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.75rem;
+  gap: 1rem;
+}
+
+.img-container{
+  height: 60px;
+  width: 60px;
+  border-radius: 10px;
+  display: flex;
+  background-color:#0F172A;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+.img-container > img {
+  height: 46px;
+  width: 46px;
+}
+.title-container {
+  text-align: start;
+}
+.auth-title {
+  color: var(--color-primary);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.auth-subtitle {
+  color: var(--color-text-muted);
+  font-size: .65rem;
+}
+
+.auth-section-title {
+  color: var(--color-primary);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: .75rem;
+}
+
+.auth-form-group {
+  margin-bottom: 16px;
+}
+
+.auth-label {
+  display: block;
+  font-size: 14px;
+  color: var(--color-text-main);
+  margin-bottom: 8px;
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-wrapper i.left-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-text-muted);
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px 12px 12px 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-input);
+  font-size: 14px;
+  color: var(--color-text-main);
+}
+
+.auth-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.auth-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.auth-btn-primary {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-button);
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 24px;
+  cursor: pointer;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--color-text-main);
+}
+
+.auth-link {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-trust-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+  text-align: center;
+}
+
+.auth-trust-icons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  color: var(--color-text-muted);
+  font-size: 20px;
+}
+
+.auth-trust-text {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  max-width: 250px;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px){
+  .auth-page-wrapper{
+    padding: 20px;
+  }
+  .auth-container{
+    background-color: var(--color-card);
+    border: 1px solid var(--card-accent);
+    border-radius: 20px;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+  }
+}
+/* Desktop Breakpoint */
+@media (min-width: 768px) {
+  .auth-page-wrapper {
+    background-color: var(--color-bg);
+  }
+
+  .auth-container {
+    max-width: 420px;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+  }
+}
+
+/* Dashboard Cards */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.stat-card {
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.stat-title {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-sm);
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-card.primary {
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+  color: var(--text-inverse);
+  border: none;
+}
+
+.stat-card.primary .stat-title,
+.stat-card.primary .stat-value {
+  color: var(--text-inverse);
+}
+
+/* Tables */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--surface-200);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface-50);
+}
+
+.table th,
+.table td {
+  padding: var(--spacing-md) var(--spacing-lg);
+  text-align: left;
+  border-bottom: 1px solid var(--surface-200);
+}
+
+.table th {
+  background: var(--surface-100);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.table tbody tr:hover {
+  background-color: var(--surface-100);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background-color: var(--secondary-50);
+  color: var(--secondary-600);
+}
+
+.badge-warning {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.badge-primary {
+  background-color: var(--primary-50);
+  color: var(--primary-600);
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--spacing-xl);
+}
+
+.page-title {
+  font-size: 2.25rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.page-subtitle {
+  color: var(--text-secondary);
+}
+
+/* Alerts */
+.alert {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  font-weight: 500;
+}
+.alert-error {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.alert-success {
+  background-color: var(--secondary-50);
+  color: var(--secondary-600);
+  border: 1px solid #a7f3d0;
+}
+
+/* KPI Cards - Admin Dashboard */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 16px;
+}
+
+@media (min-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.kpi-card {
+  background: var(--color-card);
+  border-radius: 12px;
+  padding: 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  border-left: 4px solid var(--card-accent, #0D1B2A);
+}
+
+.kpi-icon {
+  font-size: 1.6rem;
+  color: var(--card-accent, #0D1B2A);
+  min-width: 36px;
+  text-align: center;
+}
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+
+/* ============================================================
+   DESKTOP NAVBAR — Amanah Capital Brand Colors
+   Applies only on desktop (min-width: 768px).
+   Mobile navbar is hidden entirely by mobile-dashboard.css.
+   ============================================================ */
+@media (min-width: 768px) {
+  .navbar {
+    background: #061A3A;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .brand {
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+    color: #F5B51B;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .nav-link {
+    color: rgba(255, 255, 255, 0.65);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .nav-link:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  /* Logout button — gold outline style */
+  .navbar .btn-secondary,
+  .navbar .btn.btn-secondary {
+    background: transparent;
+    color: #F5B51B;
+    border: 1.5px solid #F5B51B;
+    padding: 7px 18px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .navbar .btn-secondary:hover,
+  .navbar .btn.btn-secondary:hover {
+    background: #F5B51B;
+    color: #03132D;
+  }
+
+  /* Register/Login CTA button on the navbar */
+  .navbar .btn-primary,
+  .navbar .btn.btn-primary {
+    background: #F5B51B;
+    color: #03132D;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .navbar .btn-primary:hover,
+  .navbar .btn.btn-primary:hover {
+    background: #F9C53B;
+    box-shadow: 0 4px 14px rgba(245, 181, 27, 0.35);
+  }
+
+  /* Footer matching */
+  .footer {
+    background: #03132D;
+    color: rgba(255, 255, 255, 0.45);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+}
+
+/* ============================================================
+   DESKTOP NAVBAR — Profile Dropdown
+   ============================================================ */
+@media (min-width: 768px) {
+  /* Wrapper — relative anchor for the dropdown */
+  .nav-profile-wrap {
+    position: relative;
+  }
+
+  /* Trigger button */
+  .nav-profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 7px 14px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.85);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    min-height: 40px;
+  }
+  .nav-profile-btn:hover,
+  .nav-profile-wrap.open .nav-profile-btn {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(245,181,27,0.4);
+    color: #ffffff;
+  }
+
+  /* Avatar circle */
+  .nav-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #F5B51B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #03132D;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  /* Username text */
+  .nav-username {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Chevron icon — rotate when open */
+  .nav-caret {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.45);
+    transition: transform 0.2s ease;
+  }
+  .nav-profile-wrap.open .nav-caret {
+    transform: rotate(180deg);
+  }
+
+  /* Dropdown panel */
+  .nav-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 200px;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(6,26,58,0.18);
+    overflow: hidden;
+    z-index: 2000;
+    animation: dropdownIn 0.18s ease;
+  }
+  .nav-profile-wrap.open .nav-dropdown {
+    display: block;
+  }
+
+  @keyframes dropdownIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Dropdown items */
+  .nav-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #0B1B36;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+  }
+  .nav-dropdown-item i {
+    font-size: 0.85rem;
+    width: 16px;
+    color: #718096;
+    flex-shrink: 0;
+  }
+  .nav-dropdown-item:hover {
+    background: #F7F9FC;
+    color: #1557D6;
+  }
+  .nav-dropdown-item:hover i {
+    color: #1557D6;
+  }
+
+  /* Logout — red tint on hover */
+  .nav-dropdown-logout {
+    color: #0B1B36;
+  }
+  .nav-dropdown-logout:hover {
+    background: #FEF2F2;
+    color: #DC2626;
+  }
+  .nav-dropdown-logout:hover i {
+    color: #DC2626;
+  }
+
+  /* Divider */
+  .nav-dropdown-divider {
+    height: 1px;
+    background: #E2E8F0;
+    margin: 4px 0;
+  }
+}
+
+/* Nav links — icon + text alignment */
+@media (min-width: 768px) {
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-link i {
+    font-size: 0.8rem;
+  }
+}

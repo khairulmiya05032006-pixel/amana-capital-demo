@@ -1,0 +1,498 @@
+<% layout('layouts/main') %>
+
+<style>
+:root {
+  /* Page */
+  --support-bg: #FDFDFD;
+  --support-surface: #FFFFFF;
+
+  /* Primary text */
+  --support-heading: #0F172A;
+  --support-body: #334155;
+  --support-muted: #64748B;
+
+  /* Borders */
+  --support-border: #E2E8F0;
+  --support-border-dark: #CBD5E1;
+
+  /* Primary orange — Contact Support */
+  --support-orange: #F45A0A;
+  --support-orange-dark: #ED4B00;
+  --support-orange-light: #FFF1E8;
+
+  /* Primary blue */
+  --support-blue: #2563EB;
+  --support-blue-dark: #1D4ED8;
+  --support-blue-light: #EFF6FF;
+
+  /* Green — Email */
+  --support-green: #16A34A;
+  --support-green-light: #DCFCE7;
+
+  /* Purple — Head Office / FAQ */
+  --support-purple: #9333EA;
+  --support-purple-light: #F3E8FF;
+
+  /* FAQ */
+  --support-faq-bg: #FFFFFF;
+  --support-faq-hover: #F8FAFC;
+
+  /* Info panel */
+  --support-info-bg: #EFF6FF;
+  --support-info-border: #BFDBFE;
+}
+
+.support-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background-color: var(--support-bg);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.support-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.support-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--support-border);
+  background: var(--support-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--support-heading);
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: background-color 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.support-back-btn:hover {
+  background: #F1F5F9;
+}
+
+.support-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--support-heading);
+  margin: 0;
+}
+
+.support-hero {
+  background: linear-gradient(135deg, var(--support-orange), var(--support-orange-dark));
+  border-radius: 12px;
+  padding: 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  color: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(237, 75, 0, 0.2);
+}
+
+.support-hero-content {
+  max-width: 600px;
+  position: relative;
+  z-index: 2;
+}
+
+.support-hero-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.support-hero-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.02em;
+}
+
+.support-hero-desc {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  opacity: 0.95;
+  margin: 0;
+}
+
+.support-hero-icon {
+  font-size: 6rem;
+  opacity: 0.95;
+  position: relative;
+  z-index: 2;
+  margin-right: 2rem;
+}
+
+.support-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.support-card {
+  background: var(--support-surface);
+  border: 1px solid var(--support-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.support-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.support-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.support-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.icon-blue { background: var(--support-blue-light); color: var(--support-blue); }
+.icon-green { background: var(--support-green-light); color: var(--support-green); }
+.icon-purple { background: var(--support-purple-light); color: var(--support-purple); }
+
+.support-card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+.title-blue { color: var(--support-blue); }
+.title-green { color: var(--support-green); }
+.title-purple { color: var(--support-purple); }
+
+.support-card-body {
+  padding-left: calc(48px + 1rem); /* icon width + gap */
+}
+
+.support-card-primary {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--support-heading);
+  margin-bottom: 0.5rem;
+  display: block;
+  text-decoration: none;
+}
+
+.support-card-primary:hover {
+  text-decoration: underline;
+}
+
+.support-card-secondary {
+  font-size: 0.85rem;
+  color: var(--support-muted);
+  line-height: 1.5;
+  display: block;
+}
+
+.support-section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--support-heading);
+  margin-bottom: 1.25rem;
+}
+
+.support-faq-list {
+  background: var(--support-faq-bg);
+  border: 1px solid var(--support-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.support-faq-item {
+  border-bottom: 1px solid var(--support-border);
+}
+.support-faq-item:last-child {
+  border-bottom: none;
+}
+
+.support-faq-question {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.support-faq-question:hover {
+  background-color: var(--support-faq-hover);
+}
+
+.faq-q-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.faq-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+.faq-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--support-heading);
+}
+
+.faq-caret {
+  color: var(--support-muted);
+  transition: transform 0.2s;
+}
+
+.support-faq-answer {
+  padding: 0 1.5rem 1.25rem calc(1.5rem + 24px + 1rem); /* align with text */
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--support-body);
+  display: none; 
+}
+
+/* Open state for FAQ */
+.support-faq-item.active .support-faq-answer {
+  display: block;
+}
+.support-faq-item.active .faq-caret {
+  transform: rotate(180deg);
+}
+
+.support-info-panel {
+  background: var(--support-info-bg);
+  border: 1px solid var(--support-info-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.support-info-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--support-surface);
+  color: var(--support-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  border: 1px solid var(--support-info-border);
+}
+
+.support-info-content h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--support-blue-dark);
+}
+
+.support-info-content p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--support-blue-dark);
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .support-container {
+    padding: 1rem;
+    padding-bottom: 5rem; /* space for bottom nav if present */
+  }
+  .support-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+  }
+  .support-hero-icon {
+    margin-right: 0;
+    font-size: 5rem;
+  }
+  .support-faq-question {
+    padding: 1.25rem 1rem;
+  }
+  .support-faq-answer {
+    padding: 0 1rem 1.25rem calc(1rem + 24px + 1rem);
+  }
+  .support-card-body {
+    padding-left: 0;
+    margin-top: 1rem;
+    text-align: center;
+  }
+  .support-card-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .support-info-panel {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+</style>
+
+<div class="support-container">
+  
+  <div class="support-header">
+    <a href="/customer/profile" class="support-back-btn">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <h1 class="support-title">Help & Support</h1>
+  </div>
+
+  <div class="support-hero">
+    <div class="support-hero-content">
+      <span class="support-hero-label">How can we help?</span>
+      <h2 class="support-hero-title">Contact Support</h2>
+      <p class="support-hero-desc">Our dedicated support team is available Monday to Saturday, 9 AM to 6 PM<br>to assist you with any loan-related queries.</p>
+    </div>
+    <div class="support-hero-icon">
+      <i class="fa-solid fa-headset"></i>
+    </div>
+  </div>
+
+  <div class="support-cards">
+    
+    <!-- Call Us -->
+    <div class="support-card">
+      <div class="support-card-header">
+        <div class="support-card-icon icon-blue">
+          <i class="fa-solid fa-phone"></i>
+        </div>
+        <h3 class="support-card-title title-blue">Call Us</h3>
+      </div>
+      <div class="support-card-body">
+        <a href="tel:+9093513592" class="support-card-primary"> 9093513592 / 7908569808</a>
+        <span class="support-card-secondary" style="margin-top: 0.75rem;">Mon - Sat: 9:00 AM - 6:00 PM</span>
+      </div>
+    </div>
+
+    <!-- Email Support -->
+    <div class="support-card">
+      <div class="support-card-header">
+        <div class="support-card-icon icon-green">
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+        <h3 class="support-card-title title-green">Email Support</h3>
+      </div>
+      <div class="support-card-body">
+        <a href="mailto:support@amanahcapital.com" class="support-card-primary" style="font-size: 1.05rem;">support@amanahcapital.com</a>
+        <span class="support-card-secondary" style="margin-top: 0.75rem;">We usually respond within<br>24 hours</span>
+      </div>
+    </div>
+
+    <!-- Head Office -->
+    <div class="support-card">
+      <div class="support-card-header">
+        <div class="support-card-icon icon-purple">
+          <i class="fa-solid fa-location-dot"></i>
+        </div>
+        <h3 class="support-card-title title-purple">Head Office</h3>
+      </div>
+      <div class="support-card-body">
+        <span class="support-card-primary" style="font-size: 1rem; line-height: 1.5; font-weight: 500; text-transform: uppercase;">
+          PUTIMARI BAKSIRBAS,<br>
+          PATLAKHAWA, COOCHBEHAR,<br>
+          WEST BENGAL, 736165.
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <h2 class="support-section-title">Frequently Asked Questions</h2>
+  
+  <div class="support-faq-list">
+    <!-- FAQ 1 -->
+    <div class="support-faq-item active">
+      <button class="support-faq-question" onclick="this.parentElement.classList.toggle('active')">
+        <div class="faq-q-left">
+          <div class="faq-icon icon-blue"><i class="fa-solid fa-question"></i></div>
+          <span class="faq-text">How long does it take to get a loan approved?</span>
+        </div>
+        <i class="fa-solid fa-chevron-down faq-caret"></i>
+      </button>
+      <div class="support-faq-answer">
+        Typically, loans are reviewed and approved within 24 to 48 hours of document verification.
+      </div>
+    </div>
+
+    <!-- FAQ 2 -->
+    <div class="support-faq-item active">
+      <button class="support-faq-question" onclick="this.parentElement.classList.toggle('active')">
+        <div class="faq-q-left">
+          <div class="faq-icon icon-green"><i class="fa-solid fa-question"></i></div>
+          <span class="faq-text">Can I repay my loan before the due date?</span>
+        </div>
+        <i class="fa-solid fa-chevron-down faq-caret"></i>
+      </button>
+      <div class="support-faq-answer">
+        Yes, you can prepay your loan at any time. A small prepayment penalty may apply depending on your loan type.
+      </div>
+    </div>
+
+    <!-- FAQ 3 -->
+    <div class="support-faq-item active">
+      <button class="support-faq-question" onclick="this.parentElement.classList.toggle('active')">
+        <div class="faq-q-left">
+          <div class="faq-icon icon-purple"><i class="fa-solid fa-question"></i></div>
+          <span class="faq-text">What happens if I miss a payment?</span>
+        </div>
+        <i class="fa-solid fa-chevron-down faq-caret"></i>
+      </button>
+      <div class="support-faq-answer">
+        Late payments may attract penalties and affect your credit score. Please contact our support team if you face any difficulties.
+      </div>
+    </div>
+  </div>
+
+  <div class="support-info-panel">
+    <div class="support-info-icon">
+      <i class="fa-solid fa-info"></i>
+    </div>
+    <div class="support-info-content">
+      <h4>Need More Help?</h4>
+      <p>If you have any other questions or need assistance, feel free to reach out to our support team. We're here to help!</p>
+    </div>
+  </div>
+
+</div>

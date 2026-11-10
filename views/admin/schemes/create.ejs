@@ -1,0 +1,240 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <h1 class="admin-page-title"><%= title %></h1>
+    <p class="admin-page-desc">Define the rules, interest, and frequency for a new loan scheme.</p>
+  </div>
+</div>
+
+
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="admin-widget mb-4">
+      <div class="p-4">
+        <form action="/admin/schemes" method="POST" id="schemeForm">
+          
+          <h5 class="fw-700 text-heading border-bottom pb-2 mb-4">1. Basic Information</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-8">
+              <label class="admin-form-label">Scheme Name</label>
+              <input type="text" name="scheme_name" class="form-control" required placeholder="e.g. Daily Business Loan">
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Scheme Code</label>
+              <input type="text" name="scheme_code" class="form-control" required placeholder="e.g. DBL-001">
+            </div>
+            <div class="col-12">
+              <label class="admin-form-label">Description</label>
+              <textarea name="description" class="form-control" rows="2" placeholder="Brief explanation of this loan scheme"></textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Initial Status</label>
+              <select name="status" class="form-select">
+                <option value="DRAFT">DRAFT</option>
+                <option value="ACTIVE">ACTIVE</option>
+              </select>
+            </div>
+          </div>
+
+          <h5 class="fw-700 text-heading border-bottom pb-2 mb-4">2. Repayment Frequency</h5>
+          <div class="row g-3 mb-4" id="frequency-selector">
+            <div class="col-md-4">
+              <label class="w-100">
+                <input type="radio" name="repayment_frequency" value="DAILY" class="d-none" required>
+                <div class="card frequency-card text-center py-3 border rounded shadow-sm cursor-pointer">
+                  <div class="fs-4 mb-2">📅</div>
+                  <div class="fw-600">Daily</div>
+                </div>
+              </label>
+            </div>
+            <div class="col-md-4">
+              <label class="w-100">
+                <input type="radio" name="repayment_frequency" value="WEEKLY" class="d-none">
+                <div class="card frequency-card text-center py-3 border rounded shadow-sm cursor-pointer">
+                  <div class="fs-4 mb-2">📅</div>
+                  <div class="fw-600">Weekly</div>
+                </div>
+              </label>
+            </div>
+            <div class="col-md-4">
+              <label class="w-100">
+                <input type="radio" name="repayment_frequency" value="MONTHLY" class="d-none" checked>
+                <div class="card frequency-card text-center py-3 border border-primary text-primary rounded shadow-sm cursor-pointer selected">
+                  <div class="fs-4 mb-2">📅</div>
+                  <div class="fw-600">Monthly</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <h5 class="fw-700 text-heading border-bottom pb-2 mb-4">3. Loan Configuration</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="admin-form-label">Interest Rate</label>
+              <div class="input-group">
+                <input type="number" name="base_interest_rate" class="form-control" step="0.01" value="18.00" required>
+                <span class="input-group-text">%</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Interest Type</label>
+              <select name="interest_type" class="form-select">
+                <option value="FLAT">Flat</option>
+                <option value="REDUCING_BALANCE">Reducing Balance</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Duration</label>
+              <div class="input-group">
+                <input type="number" name="duration_value" class="form-control" value="100" required>
+                <select name="duration_unit" class="form-select" style="max-width: 100px;">
+                  <option value="DAYS">Days</option>
+                  <option value="WEEKS">Weeks</option>
+                  <option value="MONTHS">Months</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <h5 class="fw-700 text-heading border-bottom pb-2 mb-4">4. Penalty Configuration</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-12">
+              <label class="admin-form-label">Penalty Mode</label>
+              <div class="d-flex gap-3 mt-2">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="penalty_mode" id="modeInherit" value="INHERIT_FREQUENCY_DEFAULT" checked>
+                  <label class="form-check-label fw-600" for="modeInherit">Global Frequency Default</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="penalty_mode" id="modeCustom" value="CUSTOM">
+                  <label class="form-check-label fw-600" for="modeCustom">Custom</label>
+                </div>
+              </div>
+              <div class="text-muted text-sm mt-2" id="modeDescription">
+                This scheme will inherit the penalty configuration for its Daily, Weekly, or Monthly frequency at the time of disbursement.
+              </div>
+            </div>
+          </div>
+          
+          <div id="customPenaltySection" style="display: none;">
+            <div class="row g-3 mb-4 p-3 bg-light rounded border">
+              <div class="col-md-6">
+                <label class="admin-form-label">Calculation Method</label>
+                <select name="penalty_type" id="penaltyType" class="form-select">
+                  <option value="PERCENTAGE">Percentage of Overdue</option>
+                  <option value="FIXED">Fixed Amount</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6" id="percentageSection">
+                <label class="admin-form-label">Penalty Rate (%)</label>
+                <div class="input-group">
+                  <input type="number" name="penalty_value" id="penaltyRate" class="form-control" step="0.01" value="2.00">
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+
+              <div class="col-md-6" id="fixedSection" style="display: none;">
+                <label class="admin-form-label">Fixed Penalty Amount</label>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input type="number" name="penalty_value_fixed" id="fixedAmount" class="form-control" step="0.01" value="50.00">
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="admin-form-label">Grace Period (Days)</label>
+                <input type="number" name="grace_period_days" class="form-control" value="0">
+              </div>
+
+              <div class="col-md-4">
+                <label class="admin-form-label">Maximum Cap (%)</label>
+                <div class="input-group">
+                  <input type="number" name="maximum_penalty_cap" class="form-control" step="0.01" value="15.00">
+                  <span class="input-group-text">%</span>
+                </div>
+                <div class="text-xs text-muted mt-1">0 for unlimited</div>
+              </div>
+
+              <div class="col-md-4 d-flex align-items-end">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" name="penalty_auto_apply" id="autoApply" value="1" checked>
+                  <label class="form-check-label fw-600" for="autoApply">
+                    Auto Apply Penalty
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-top pt-4 text-right">
+            <a href="/admin/schemes" class="admin-btn admin-btn-secondary me-2">Cancel</a>
+            <button type="submit" class="admin-btn admin-btn-primary px-5">Save Scheme</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="admin-widget sticky-top mb-4" style="top: 80px;">
+      <div class="admin-widget-header bg-light">
+        <div class="admin-widget-title text-center w-100">
+          <i class="fa fa-info-circle text-primary"></i> Effective Penalty Configuration
+        </div>
+      </div>
+      <div class="p-4" id="penaltyPreviewPanel">
+        <div class="text-center text-muted py-4" id="loadingPreview">
+          <i class="fa fa-spinner fa-spin fa-2x mb-3 text-light"></i>
+          <p>Loading default settings...</p>
+        </div>
+        <div id="penaltyPreviewContent" style="display: none;">
+          <h6 class="fw-bold mb-3 pb-2 border-bottom text-muted" id="previewTitle">Effective Default</h6>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Penalty Rate</span>
+            <span class="fw-600" id="previewRate">--</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Grace Period</span>
+            <span class="fw-600" id="previewGrace">--</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Calculation</span>
+            <span class="fw-600" id="previewMethod">--</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Maximum Cap</span>
+            <span class="fw-600" id="previewCap">--</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">Auto Apply</span>
+            <span class="fw-600" id="previewAutoApply">--</span>
+          </div>
+          <div class="alert alert-warning text-xs mb-0 py-2">
+            <i class="fa fa-exclamation-triangle"></i> These values are locked into an immutable snapshot at loan disbursement.
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="admin-widget sticky-top" style="top: 80px;">
+      <div class="admin-widget-header bg-light">
+        <div class="admin-widget-title text-center w-100">
+          <i class="fa fa-eye text-primary"></i> Live Scheme Preview
+        </div>
+      </div>
+      <div class="p-4" id="schemePreviewPanel">
+        <!-- Preview will be generated dynamically -->
+        <div class="text-center text-muted py-5">
+          <i class="fa fa-calculator fa-3x mb-3 text-light"></i>
+          <p>Fill out the configuration to see a simulated schedule.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/admin/scheme-form.js"></script>

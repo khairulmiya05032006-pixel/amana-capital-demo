@@ -1,0 +1,111 @@
+<% layout('layouts/adminLayout') %>
+
+<div class="admin-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a href="/admin/customers/<%= customer.id %>" class="admin-btn admin-btn-secondary admin-btn-icon" title="Back to Customer">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <div>
+      <h1 class="admin-page-title m-0">Create Loan Application</h1>
+      <p class="admin-page-desc m-0">Initiate a loan application on behalf of <span class="fw-600 text-primary"><%= customer.full_name %></span></p>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="admin-widget mb-4">
+      <div class="p-2" style="background-color: #F0F9FF; border-bottom: 1px solid #E0F2FE; border-radius: 1rem;" >
+        <div class="d-flex align-items-center gap-3">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #BAE6FD; color: #0284C7; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="fa fa-info-circle"></i>
+          </div>
+          <div>
+            <h5 class="fw-700 text-heading mb-1 text-sm">Approval Phase Notice</h5>
+            <p class="text-xs text-muted mb-0" style="color: #0369A1 !important;">The Repayment Scheme, Duration, and Interest Rate are dynamically selected by an authorized officer during the Approval Phase.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4">
+        <form action="/admin/customers/<%= customer.id %>/applications" method="POST" id="adminApplyForm">
+          
+          <!-- Readonly Customer Info -->
+          <h5 class="fw-700 text-heading mt-3 mb-1 text-sm d-flex align-items-center gap-2">
+            <i class="fa fa-user text-muted"></i> Customer Dossier
+          </h5>
+          <div class="row g-3 mb-4 p-3 rounded-3" style="background-color: #F8FAFC; border: 1px dashed #CBD5E1; padding: 1rem; border-radius: 1rem;">
+            <div class="col-md-6">
+              <label class="admin-form-label text-xs">Customer Name</label>
+              <div class="fw-600 text-heading"><%= customer.full_name %></div>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label text-xs">Customer Code</label>
+              <div class="fw-600 text-primary"><%= customer.customer_code %></div>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label text-xs">Phone Number</label>
+              <div class="text-muted text-sm"><i class="fa fa-phone me-1"></i> <%= customer.phone %></div>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label text-xs">Email Address</label>
+              <div class="text-muted text-sm"><i class="fa fa-envelope me-1"></i> <%= customer.email %></div>
+            </div>
+          </div>
+
+          <!-- Application Inputs -->
+          <h5 class="fw-700 text-heading mb-3 text-sm d-flex align-items-center gap-2 mt-4 pt-2">
+            <i class="fa fa-file-invoice-dollar text-primary"></i> Application Details
+          </h5>
+          
+          <div class="row g-4">
+            <div class="col-md-12">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Requested Amount (₹) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted">₹</span>
+                  <input type="number" name="requested_amount" class="admin-form-input border-start-0 ps-0 fw-600 text-heading" min="100" step="100" placeholder="50,000" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Loan Purpose <span class="text-muted fw-normal">(Optional)</span></label>
+                <textarea name="loan_purpose" class="admin-form-textarea fw-500 text-heading" rows="3" placeholder="Explain what the loan will be used for (e.g. Medical emergency, business expansion)..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-5 pt-4 border-top">
+            <a href="/admin/customers/<%= customer.id %>" class="admin-btn admin-btn-secondary px-4">Cancel</a>
+            <button type="submit" class="admin-btn admin-btn-primary px-5 fw-600" id="btnSubmitApp">
+              <i class="fa fa-paper-plane me-2"></i> Submit Application
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <!-- Helpful sidebar or empty space -->
+    <div class="admin-widget p-4" style="background: linear-gradient(145deg, #1E293B, #0F172A); color: white;">
+      <h5 class="fw-700 mb-3" style="color: #38BDF8;"><i class="fa fa-lightbulb me-2"></i> Application Process</h5>
+      <ol class="ps-3 mb-0 text-sm" style="color: #94A3B8; line-height: 1.7;">
+        <li class="mb-2"><strong>Initiation:</strong> Submit the customer's request here.</li>
+        <li class="mb-2"><strong>Review:</strong> The application goes to the Pending Applications queue.</li>
+        <li class="mb-2"><strong>Approval:</strong> An officer reviews it, assigns a Repayment Scheme and Interest Rate, and approves it.</li>
+        <li><strong>Disbursement:</strong> The loan is disbursed and becomes ACTIVE.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('adminApplyForm').addEventListener('submit', function() {
+  const btn = document.getElementById('btnSubmitApp');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Submitting...';
+});
+</script>
